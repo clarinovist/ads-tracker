@@ -8,7 +8,7 @@ export async function POST(request: Request) {
 
     try {
         if (mode === 'smart') {
-            const DAYS_TO_SYNC = 30;
+            const DAYS_TO_SYNC = 7;
             const today = new Date();
             console.log(`Triggering Smart Sync (Last ${DAYS_TO_SYNC} days)...`);
 
