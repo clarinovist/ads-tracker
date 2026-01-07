@@ -12,6 +12,7 @@ import {
     Users,
     Settings,
     ChevronDown,
+    Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SyncButton } from "./SyncButton";
@@ -42,6 +43,12 @@ const navGroups: NavGroup[] = [
                 title: "Performance Comparison",
                 url: "/comparison",
                 icon: BarChart3,
+            },
+            {
+                title: "AI Analyst",
+                url: "/analyst",
+                icon: Sparkles,
+                badge: "New",
             },
         ],
     },
