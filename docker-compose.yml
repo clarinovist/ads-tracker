@@ -8,8 +8,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-ads_tracker}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Port NOT exposed to public - only accessible via Docker network
+    # If you need local access, use: "127.0.0.1:5432:5432"
+    networks:
+      - ads-tracker-network
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -22,20 +24,26 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
-    # Note: For local development with hot-reload, you might want a different setup 
-    # (e.g. mounting volumes and running `npm run dev`), but this uses the production build as requested.
-    # To run in dev mode via docker, you'd override the command.
     container_name: ads-tracker-web
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-ads_tracker}?schema=public
       NODE_ENV: production
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://ads.nugrohopramono.my.id}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
     ports:
       - "3000:3000"
+    networks:
+      - ads-tracker-network
     depends_on:
       postgres:
         condition: service_healthy
     restart: always
+
+networks:
+  ads-tracker-network:
+    driver: bridge
 
 volumes:
   postgres_data:

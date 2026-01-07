@@ -39,11 +39,34 @@ docker-compose up -d --build
 
 The app will be available at [http://localhost:3000](http://localhost:3000).
 
-> **Note**: Make sure you have `.env` file with your `META_ACCESS_TOKEN`. You can copy from `.env.example`:
+> **Note**: Make sure you have `.env` file configured. You can copy from `.env.example`:
 > ```bash
 > cp .env.example .env
-> # Then edit .env and add your META_ACCESS_TOKEN
+> # Then edit .env and configure your settings
 > ```
+
+### Production Deployment
+
+For production deployment with a custom domain (e.g., ads.nugrohopramono.my.id):
+
+1. **Quick Deployment**: Use the automated deployment script:
+   ```bash
+   ./deploy.sh
+   ```
+
+2. **Manual Deployment**: See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions including:
+   - SSL/TLS certificate setup with Let's Encrypt
+   - Nginx reverse proxy configuration
+   - Environment variable configuration
+   - Database backup and maintenance
+   - Security recommendations
+
+The production setup includes:
+- Nginx reverse proxy with SSL/TLS support
+- PostgreSQL database with persistent volumes
+- Automatic HTTPS redirect
+- Optimized caching for static assets
+- Security headers and best practices
 
 ### Alternative: Run Locally (Dev Mode)
 
