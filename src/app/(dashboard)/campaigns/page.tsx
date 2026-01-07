@@ -8,23 +8,29 @@ import {
     TrendingUp,
     DollarSign,
 } from "lucide-react";
-import { startOfMonth, endOfDay } from "date-fns";
+import { startOfMonth, endOfDay, format, startOfDay } from "date-fns";
 import { Suspense } from "react";
 import CampaignsTable, { CampaignRow } from "@/components/CampaignsTable";
+import { useSearchParams } from "next/navigation";
 
 function CampaignsContent() {
+    const searchParams = useSearchParams();
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+
     const [campaigns, setCampaigns] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
     const [dateRange, setDateRange] = useState({
-        from: startOfMonth(new Date()),
-        to: endOfDay(new Date())
+        from: fromParam ? startOfDay(new Date(fromParam)) : startOfDay(new Date()),
+        to: toParam ? endOfDay(new Date(toParam)) : endOfDay(new Date())
     });
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const start = dateRange.from?.toISOString();
-            const end = dateRange.to?.toISOString();
+            const start = format(dateRange.from, 'yyyy-MM-dd');
+            const end = format(dateRange.to, 'yyyy-MM-dd');
             const res = await fetch(`/api/campaigns?startDate=${start}&endDate=${end}`);
             const data = await res.json();
             setCampaigns(data);
@@ -45,9 +51,9 @@ function CampaignsContent() {
     const totals = activeCampaigns.reduce((acc, camp) => ({
         spend: acc.spend + camp.aggregate.spend,
         leads: acc.leads + camp.aggregate.leads,
-        revenue: acc.revenue + camp.aggregate.revenue,
+        clicks: acc.clicks + (camp.aggregate.clicks || 0),
         impressions: acc.impressions + camp.aggregate.impressions,
-    }), { spend: 0, leads: 0, revenue: 0, impressions: 0 });
+    }), { spend: 0, leads: 0, clicks: 0, impressions: 0 });
 
     const avgRoas = totals.spend > 0 ? totals.revenue / totals.spend : 0;
 
@@ -60,9 +66,6 @@ function CampaignsContent() {
         impressions: c.aggregate.impressions,
         clicks: c.aggregate.clicks || 0,
         leads: c.aggregate.leads,
-        leads_whatsapp: c.aggregate.leads_whatsapp || 0,
-        leads_instagram: c.aggregate.leads_instagram || 0,
-        leads_messenger: c.aggregate.leads_messenger || 0,
     }));
 
     return (
@@ -87,18 +90,12 @@ function CampaignsContent() {
                     icon={Users}
                     iconColor="text-purple-500"
                 />
-                {/* 
-                 * NOTE: User asked to remove ROAS from 'table', but KPIs might still benefit from it.
-                 * However, to be consistent with 'removing ROAS', I will replace ROAS card with CPM here too
-                 * or simply leave Revenue if useful. Let's swap ROAS card for CPM to match the theme.
-                 */}
                 <MetricsCard
-                    title="Total Revenue"
-                    value={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totals.revenue)}
+                    title="Total Clicks"
+                    value={new Intl.NumberFormat('id-ID').format(totals.clicks)}
                     icon={TrendingUp}
                     iconColor="text-emerald-500"
                 />
-                {/* Replaced ROAS with CPM or just hidden. The user hates ROAS. Let's make it CPM. */}
                 <MetricsCard
                     title="Avg CPM"
                     value={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(

@@ -12,6 +12,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "./ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export interface CampaignRow {
     id: string;
@@ -21,9 +29,6 @@ export interface CampaignRow {
     impressions: number;
     clicks: number;
     leads: number;
-    leads_whatsapp: number;
-    leads_instagram: number;
-    leads_messenger: number;
 }
 
 interface CampaignsTableProps {
@@ -38,6 +43,21 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
 
     const [sortKey, setSortKey] = useState<SortKey>('spend');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+        spend: true,
+        impressions: true,
+        cpm: true,
+        clicks: true,
+        ctr: true,
+        leads: true,
+        cpc: true,
+        cpl: true,
+    });
+
+    const toggleColumn = (key: string) => {
+        setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }));
+    };
 
     if (activeCampaigns.length === 0) {
         return (
@@ -87,8 +107,67 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>Campaign Performance (Active)</CardTitle>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="ml-auto hidden h-8 lg:flex">
+                            View
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[150px]">
+                        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.spend}
+                            onCheckedChange={() => toggleColumn("spend")}
+                        >
+                            Spend
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.impressions}
+                            onCheckedChange={() => toggleColumn("impressions")}
+                        >
+                            Impressions
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.cpm}
+                            onCheckedChange={() => toggleColumn("cpm")}
+                        >
+                            CPM
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.clicks}
+                            onCheckedChange={() => toggleColumn("clicks")}
+                        >
+                            Clicks
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.ctr}
+                            onCheckedChange={() => toggleColumn("ctr")}
+                        >
+                            CTR
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.leads}
+                            onCheckedChange={() => toggleColumn("leads")}
+                        >
+                            Leads
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.cpc}
+                            onCheckedChange={() => toggleColumn("cpc")}
+                        >
+                            CPC
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={visibleColumns.cpl}
+                            onCheckedChange={() => toggleColumn("cpl")}
+                        >
+                            CPL
+                        </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -99,74 +178,74 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
                                     Campaign Name <SortIcon />
                                 </Button>
                             </TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">
+                            {/* Status column removed as per request */}
+                            {visibleColumns.spend && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('spend')}>
                                     Spend <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.impressions && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('impressions')}>
                                     Impr. <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.cpm && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('cpm')}>
                                     CPM <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.clicks && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('clicks')}>
                                     Clicks <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.ctr && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('ctr')}>
                                     CTR <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.leads && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('leads')}>
                                     Leads <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.cpc && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('cpc')}>
                                     CPC <SortIcon />
                                 </Button>
-                            </TableHead>
-                            <TableHead className="text-right">
+                            </TableHead>}
+                            {visibleColumns.cpl && <TableHead className="text-right">
                                 <Button variant="ghost" onClick={() => handleSort('cpl')}>
                                     CPL <SortIcon />
                                 </Button>
-                            </TableHead>
+                            </TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sorted.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell className="font-medium">{row.name}</TableCell>
-                                <TableCell>
-                                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        {row.status}
-                                    </span>
+                                <TableCell className="font-medium">
+                                    <div className="max-w-[300px] truncate" title={row.name}>
+                                        {row.name}
+                                    </div>
                                 </TableCell>
-                                <TableCell className="text-right">
+                                {/* Status cell removed */}
+                                {visibleColumns.spend && <TableCell className="text-right">
                                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.spend)}
-                                </TableCell>
-                                <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.impressions)}</TableCell>
-                                <TableCell className="text-right">
+                                </TableCell>}
+                                {visibleColumns.impressions && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.impressions)}</TableCell>}
+                                {visibleColumns.cpm && <TableCell className="text-right">
                                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpm)}
-                                </TableCell>
-                                <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.clicks)}</TableCell>
-                                <TableCell className="text-right">{row.ctr.toFixed(2)}%</TableCell>
-                                <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.leads)}</TableCell>
-                                <TableCell className="text-right">
+                                </TableCell>}
+                                {visibleColumns.clicks && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.clicks)}</TableCell>}
+                                {visibleColumns.ctr && <TableCell className="text-right">{row.ctr.toFixed(2)}%</TableCell>}
+                                {visibleColumns.leads && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.leads)}</TableCell>}
+                                {visibleColumns.cpc && <TableCell className="text-right">
                                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpc)}
-                                </TableCell>
-                                <TableCell className="text-right">
+                                </TableCell>}
+                                {visibleColumns.cpl && <TableCell className="text-right">
                                     {row.cpl > 0 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpl) : '-'}
-                                </TableCell>
+                                </TableCell>}
                             </TableRow>
                         ))}
                     </TableBody>

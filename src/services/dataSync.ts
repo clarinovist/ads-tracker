@@ -9,7 +9,7 @@ import {
     MetaAdSet,
     MetaAd
 } from "@/lib/meta";
-import { startOfDay } from "date-fns";
+import { startOfDay, format } from "date-fns";
 
 export async function syncDailyInsights(targetDate?: Date) {
     console.log("🔄 Starting Daily Sync Service...");
@@ -25,8 +25,8 @@ export async function syncDailyInsights(targetDate?: Date) {
         }
 
         const dateToSync = targetDate || new Date();
-        const dateStr = dateToSync.toISOString().split('T')[0]; // YYYY-MM-DD
-        const normalizedDate = startOfDay(new Date(dateStr));
+        const dateStr = format(dateToSync, 'yyyy-MM-dd'); // YYYY-MM-DD
+        const normalizedDate = startOfDay(dateToSync);
 
         console.log(`📅 Syncing data for: ${dateStr}`);
 
@@ -56,19 +56,24 @@ export async function syncBusinessData(business: any, date: Date) {
 
     const token = business.access_token;
     const adAccountId = business.ad_account_id;
-    const dateStr = date.toISOString().split('T')[0];
+
+    // Ensure strict normalization to midnight (Local -> UTC conversion handled by date-fns startOfDay relative to local execution context? 
+    // Actually, safest is to trust the passed date logic, but usually we want to strip time.
+    // startOfDay returns a Date with time 00:00:00 in LOCAL time.
+    const normalizedDate = startOfDay(date);
+    const dateStr = format(normalizedDate, 'yyyy-MM-dd');
 
     // 1. Sync Account Insights
-    await syncAccountInsights(business.id, adAccountId, dateStr, token, date);
+    await syncAccountInsights(business.id, adAccountId, dateStr, token, normalizedDate);
 
     // 2. Sync Campaigns & Insights
-    await syncCampaigns(business.id, adAccountId, dateStr, token, date);
+    await syncCampaigns(business.id, adAccountId, dateStr, token, normalizedDate);
 
     // 3. Sync AdSets & Insights
-    await syncAdSets(business.id, adAccountId, dateStr, token, date);
+    await syncAdSets(business.id, adAccountId, dateStr, token, normalizedDate);
 
     // 4. Sync Ads & Insights
-    await syncAds(business.id, adAccountId, dateStr, token, date);
+    await syncAds(business.id, adAccountId, dateStr, token, normalizedDate);
 
     console.log(`✅ Synced ${business.name} successfully.`);
 }
@@ -86,6 +91,7 @@ async function syncCampaigns(businessId: string, adAccountId: string, dateStr: s
     console.log(`   Fetched ${campaigns.length} campaigns`);
 
     for (const camp of campaigns) {
+        console.log(`     -> Syncing Campaign: ${camp.name} (${camp.id}) status: ${camp.effective_status || camp.status}`);
         await prisma.campaign.upsert({
             where: { id: camp.id },
             update: { name: camp.name, objective: camp.objective, status: camp.effective_status || camp.status, business_id: businessId },
@@ -98,14 +104,10 @@ async function syncCampaigns(businessId: string, adAccountId: string, dateStr: s
     console.log(`   Fetched ${insights.length} campaign insights`);
 
     for (const insight of insights) {
-        // Ensure campaign exists before upserting insight (handling weird race conditions or deleted campaigns)
-        // Ideally we synced all campaigns above, but sometimes insights return for deleted items.
-        // We will skip if campaign doesn't exist to avoid FK errors, or create a placeholder.
-        // For simplicity, we assume the previous fetchCampaigns got it, or we skip.
-        // Actually, safer to try/catch or check existence.
-        // Given we just synced campaigns, it should be fine mostly.
-
-        if (!insight.campaign_id) continue;
+        if (!insight.campaign_id) {
+            console.log(`   ⚠️ Insight has no campaign_id, skipping.`);
+            continue;
+        }
 
         // Verify campaign exists in DB
         const exists = await prisma.campaign.count({ where: { id: insight.campaign_id } });

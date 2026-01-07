@@ -1,8 +1,23 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import fs from 'fs';
+import path from 'path';
 
-import { prisma } from "../src/lib/prisma";
-import { syncBusinessData } from "../src/services/dataSync";
+// Manually load .env immediately
+const envPath = path.resolve(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
+    const envConfig = fs.readFileSync(envPath, 'utf-8');
+    envConfig.split('\n').forEach((line) => {
+        const parts = line.split('=');
+        if (parts.length >= 2) {
+            const key = parts[0].trim();
+            const value = parts.slice(1).join('=').trim().replace(/^["']|["']$/g, '');
+            if (key && !key.startsWith('#')) {
+                process.env[key] = value;
+            }
+        }
+    });
+}
+
+// Imports removed, will use dynamic imports
 
 /**
  * Script to backfill historical data for all active businesses
@@ -11,6 +26,9 @@ import { syncBusinessData } from "../src/services/dataSync";
  */
 
 async function backfillHistoricalData(daysBack: number = 30) {
+    const { prisma } = await import("../src/lib/prisma");
+    const { syncBusinessData } = await import("../src/services/dataSync");
+
     console.log(`🔄 Starting Historical Data Backfill for ${daysBack} days...`);
 
     try {

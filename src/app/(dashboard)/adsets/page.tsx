@@ -37,7 +37,7 @@ function AdSetsContent() {
     const [sortKey, setSortKey] = useState<SortKey>('spend');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [dateRange, setDateRange] = useState({
-        from: startOfMonth(new Date()),
+        from: new Date(),
         to: endOfDay(new Date())
     });
 

@@ -102,7 +102,8 @@ export async function fetchInsights(
     breakdowns?: string,
     actionBreakdowns?: string
 ): Promise<MetaInsight[]> {
-    let url = `https://graph.facebook.com/v19.0/${adAccountId}/insights?time_range={'since':'${date}','until':'${date}'}&fields=${COMMON_FIELDS},campaign_id,adset_id,ad_id&access_token=${accessToken}&level=${level}&limit=50`;
+    const timeRange = encodeURIComponent(JSON.stringify({ since: date, until: date }));
+    let url = `https://graph.facebook.com/v19.0/${adAccountId}/insights?time_range=${timeRange}&fields=${COMMON_FIELDS},campaign_id,adset_id,ad_id&access_token=${accessToken}&level=${level}&limit=50`;
 
     if (breakdowns) {
         url += `&breakdowns=${breakdowns}`;
@@ -138,7 +139,7 @@ async function fetchMetaList<T>(url: string): Promise<T[]> {
 
     while (nextUrl) {
         try {
-            const response: Response = await fetch(nextUrl);
+            const response: Response = await fetch(nextUrl, { cache: 'no-store' });
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error(`Meta API Error:`, errorData);

@@ -91,10 +91,7 @@ export default async function DashboardPage({
             impressions: acc.impressions + curr.impressions,
             clicks: acc.clicks + curr.clicks,
             leads: acc.leads + curr.leads,
-            leads_whatsapp: (acc.leads_whatsapp || 0) + (curr.leads_whatsapp || 0),
-            leads_instagram: (acc.leads_instagram || 0) + (curr.leads_instagram || 0),
-            leads_messenger: (acc.leads_messenger || 0) + (curr.leads_messenger || 0),
-        }), { spend: 0, impressions: 0, clicks: 0, leads: 0, leads_whatsapp: 0, leads_instagram: 0, leads_messenger: 0 });
+        }), { spend: 0, impressions: 0, clicks: 0, leads: 0 });
 
         return { id: c.id, name: c.name, status: c.status || 'UNKNOWN', ...stats };
     }).filter((c) => c.status === 'ACTIVE' && c.spend > 0);
@@ -106,10 +103,7 @@ export default async function DashboardPage({
             impressions: acc.impressions + curr.impressions,
             clicks: acc.clicks + curr.clicks,
             leads: acc.leads + curr.leads,
-            leads_whatsapp: (acc.leads_whatsapp || 0) + (curr.leads_whatsapp || 0),
-            leads_instagram: (acc.leads_instagram || 0) + (curr.leads_instagram || 0),
-            leads_messenger: (acc.leads_messenger || 0) + (curr.leads_messenger || 0),
-        }), { spend: 0, impressions: 0, clicks: 0, leads: 0, leads_whatsapp: 0, leads_instagram: 0, leads_messenger: 0 });
+        }), { spend: 0, impressions: 0, clicks: 0, leads: 0 });
 
         return { id: a.id, name: a.name, status: a.status || 'UNKNOWN', ...stats };
     }).filter((a) => a.status === 'ACTIVE' && a.spend > 0);

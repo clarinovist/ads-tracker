@@ -19,9 +19,31 @@ if (fs.existsSync(envPath)) {
 }
 
 async function run() {
-    console.log('🚀 Loading environment and starting sync...');
+    console.log('🚀 Loading environment and starting Smart Sync (Last 30 Days)...');
     const { syncDailyInsights } = await import('../src/services/dataSync');
-    await syncDailyInsights();
+
+    // Sync last 30 days to catch late attributions and ensure data continuity
+    const DAYS_TO_SYNC = 30;
+    const today = new Date();
+
+    console.log(`📅 Starting sync for the last ${DAYS_TO_SYNC} days...`);
+
+    for (let i = 0; i < DAYS_TO_SYNC; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+
+        // Add retry/delay logic if needed, but for now simple sequential is safer for rate limits
+        try {
+            console.log(`⏳ [${i + 1}/${DAYS_TO_SYNC}] Syncing: ${date.toISOString().split('T')[0]}`);
+            await syncDailyInsights(date);
+            // Small pause to be gentle on API
+            await new Promise(r => setTimeout(r, 1000));
+        } catch (error) {
+            console.error(`❌ Failed processing ${date.toISOString()}:`, error);
+        }
+    }
+
+    console.log('🎉 Smart Sync Completed!');
 }
 
 run();

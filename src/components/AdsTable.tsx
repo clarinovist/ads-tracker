@@ -19,9 +19,6 @@ export interface AdRow {
     impressions: number;
     clicks: number;
     leads: number;
-    leads_whatsapp: number;
-    leads_instagram: number;
-    leads_messenger: number;
 }
 
 interface AdsTableProps {

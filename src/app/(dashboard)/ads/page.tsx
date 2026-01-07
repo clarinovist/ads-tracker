@@ -18,7 +18,7 @@ import {
     Filter
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { startOfMonth, endOfDay } from "date-fns";
+import { startOfMonth, endOfDay, format, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,20 +34,23 @@ function AdsContent() {
     const searchParams = useSearchParams();
     const adSetId = searchParams.get("adSetId");
 
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+
     const [ads, setAds] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE'>('ACTIVE');
     const [dateRange, setDateRange] = useState({
-        from: startOfMonth(new Date()),
-        to: endOfDay(new Date())
+        from: fromParam ? startOfDay(new Date(fromParam)) : startOfDay(new Date()),
+        to: toParam ? endOfDay(new Date(toParam)) : endOfDay(new Date())
     });
     const [selectedAd, setSelectedAd] = useState<any>(null);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const start = dateRange.from?.toISOString();
-            const end = dateRange.to?.toISOString();
+            const start = format(dateRange.from, 'yyyy-MM-dd');
+            const end = format(dateRange.to, 'yyyy-MM-dd');
             const url = `/api/ads?startDate=${start}&endDate=${end}${adSetId ? `&adSetId=${adSetId}` : ''}`;
             const res = await fetch(url);
             const data = await res.json();

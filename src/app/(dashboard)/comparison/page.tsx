@@ -11,7 +11,7 @@ import {
     MousePointer2,
 } from "lucide-react";
 import Link from 'next/link';
-import { startOfMonth, endOfDay } from "date-fns";
+import { startOfMonth, startOfDay, endOfDay } from "date-fns";
 import { cn, formatCurrency } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +23,7 @@ export default async function ComparisonPage({
 }) {
     const params = await searchParams;
     const today = new Date();
-    const fromDate = params.from ? new Date(params.from) : startOfMonth(today);
+    const fromDate = params.from ? startOfDay(new Date(params.from)) : startOfDay(today);
     const toDate = params.to ? endOfDay(new Date(params.to)) : endOfDay(today);
 
     // Fetch businesses and their aggregate data for the period

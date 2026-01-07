@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format, subDays } from "date-fns";
+import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export function DateRangePicker({
     const toParam = searchParams.get('to');
 
     const [internalDate, setInternalDate] = React.useState<DateRange | undefined>({
-        from: fromParam ? new Date(fromParam) : subDays(new Date(), 7),
+        from: fromParam ? new Date(fromParam) : new Date(),
         to: toParam ? new Date(toParam) : new Date(),
     });
 
@@ -45,14 +45,14 @@ export function DateRangePicker({
         }
     };
 
-    const [preset, setPreset] = React.useState("7d");
+    const [preset, setPreset] = React.useState(fromParam ? "custom" : "today");
 
     const handleSelect = (range: DateRange | undefined) => {
         setDate(range);
         if (range?.from && range?.to) {
             const params = new URLSearchParams(searchParams);
-            params.set('from', range.from.toISOString().split('T')[0]);
-            params.set('to', range.to.toISOString().split('T')[0]);
+            params.set('from', format(range.from, 'yyyy-MM-dd'));
+            params.set('to', format(range.to, 'yyyy-MM-dd'));
             router.push(`${pathname}?${params.toString()}`);
         }
     };
@@ -85,8 +85,8 @@ export function DateRangePicker({
 
         // Update URL
         const params = new URLSearchParams(searchParams);
-        params.set('from', newFrom.toISOString().split('T')[0]);
-        params.set('to', newTo.toISOString().split('T')[0]);
+        params.set('from', format(newFrom, 'yyyy-MM-dd'));
+        params.set('to', format(newTo, 'yyyy-MM-dd'));
         router.push(`${pathname}?${params.toString()}`);
     };
 

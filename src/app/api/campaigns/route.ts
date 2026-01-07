@@ -24,8 +24,18 @@ export async function GET(request: Request) {
                 insights: {
                     where: {
                         date: {
-                            ...(startDateStr && { gte: startOfDay(new Date(startDateStr)) }),
-                            ...(endDateStr && { lte: endOfDay(new Date(endDateStr)) }),
+                            ...(startDateStr && {
+                                gte: (() => {
+                                    const [y, m, d] = startDateStr.split('-').map(Number);
+                                    return startOfDay(new Date(y, m - 1, d));
+                                })()
+                            }),
+                            ...(endDateStr && {
+                                lte: (() => {
+                                    const [y, m, d] = endDateStr.split('-').map(Number);
+                                    return endOfDay(new Date(y, m - 1, d));
+                                })()
+                            }),
                         }
                     },
                     orderBy: { date: 'asc' }

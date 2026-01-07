@@ -3,7 +3,7 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import OverviewCharts from '@/components/OverviewCharts';
 import CampaignsTable, { CampaignRow } from '@/components/CampaignsTable';
 import AdsTable, { AdRow } from '@/components/AdsTable';
-import { startOfMonth, endOfDay, format } from 'date-fns';
+import { startOfMonth, startOfDay, endOfDay, format } from 'date-fns';
 import { MetricsCard } from '@/components/MetricsCard';
 import {
     DollarSign,
@@ -32,7 +32,7 @@ export default async function BusinessAnalyticsPage({
     const query = await searchParams;
 
     const today = new Date();
-    const fromDate = query.from ? new Date(query.from) : startOfMonth(today);
+    const fromDate = query.from ? startOfDay(new Date(query.from)) : startOfDay(today);
     const toDate = query.to ? endOfDay(new Date(query.to)) : endOfDay(today);
 
     // 1. Fetch Business
@@ -78,8 +78,7 @@ export default async function BusinessAnalyticsPage({
 
     // Calculate Aggregates
     const totalKpi = {
-        spend: 0, impressions: 0, clicks: 0, leads: 0, conversions: 0, revenue: 0,
-        leads_whatsapp: 0, leads_instagram: 0, leads_messenger: 0
+        spend: 0, impressions: 0, clicks: 0, leads: 0, conversions: 0, revenue: 0
     };
 
     insights.forEach((i: any) => {
@@ -89,9 +88,6 @@ export default async function BusinessAnalyticsPage({
         totalKpi.leads += i.leads;
         totalKpi.conversions += (i.conversions || 0);
         totalKpi.revenue += (i.revenue || 0);
-        totalKpi.leads_whatsapp += (i.leads_whatsapp || 0);
-        totalKpi.leads_instagram += (i.leads_instagram || 0);
-        totalKpi.leads_messenger += (i.leads_messenger || 0);
     });
 
     // Derived Metrics
@@ -115,10 +111,7 @@ export default async function BusinessAnalyticsPage({
             impressions: acc.impressions + curr.impressions,
             clicks: acc.clicks + curr.clicks,
             leads: acc.leads + curr.leads,
-            leads_whatsapp: (acc.leads_whatsapp || 0) + (curr.leads_whatsapp || 0),
-            leads_instagram: (acc.leads_instagram || 0) + (curr.leads_instagram || 0),
-            leads_messenger: (acc.leads_messenger || 0) + (curr.leads_messenger || 0),
-        }), { spend: 0, impressions: 0, clicks: 0, leads: 0, leads_whatsapp: 0, leads_instagram: 0, leads_messenger: 0 });
+        }), { spend: 0, impressions: 0, clicks: 0, leads: 0 });
 
         return { id: c.id, name: c.name, status: c.status || 'UNKNOWN', ...stats };
     }).filter((c) => c.spend > 0).sort((a, b) => b.spend - a.spend); // Show top spenders
@@ -130,10 +123,7 @@ export default async function BusinessAnalyticsPage({
             impressions: acc.impressions + curr.impressions,
             clicks: acc.clicks + curr.clicks,
             leads: acc.leads + curr.leads,
-            leads_whatsapp: (acc.leads_whatsapp || 0) + (curr.leads_whatsapp || 0),
-            leads_instagram: (acc.leads_instagram || 0) + (curr.leads_instagram || 0),
-            leads_messenger: (acc.leads_messenger || 0) + (curr.leads_messenger || 0),
-        }), { spend: 0, impressions: 0, clicks: 0, leads: 0, leads_whatsapp: 0, leads_instagram: 0, leads_messenger: 0 });
+        }), { spend: 0, impressions: 0, clicks: 0, leads: 0 });
 
         return { id: a.id, name: a.name, status: a.status || 'UNKNOWN', ...stats };
     }).filter((a) => a.spend > 0).sort((a, b) => b.leads - a.leads); // Show top lead generators
@@ -161,13 +151,6 @@ export default async function BusinessAnalyticsPage({
                 <MetricsCard title="Leads" value={totalKpi.leads} icon={Users} iconColor="text-purple-500" />
                 <MetricsCard title="CPM" value={formatCurrency(cpm)} icon={BarChart3} iconColor="text-orange-500" description="Cost per 1,000 impr" />
                 <MetricsCard title="CTR" value={`${ctr.toFixed(2)}%`} icon={MousePointer2} iconColor="text-blue-500" />
-            </div>
-
-            {/* Platform Split */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <MetricsCard title="WhatsApp Leads" value={totalKpi.leads_whatsapp} icon={Zap} iconColor="text-green-500" />
-                <MetricsCard title="Instagram Leads" value={totalKpi.leads_instagram} icon={Zap} iconColor="text-pink-500" />
-                <MetricsCard title="Messenger Leads" value={totalKpi.leads_messenger} icon={Zap} iconColor="text-blue-500" />
             </div>
 
             {/* Charts */}
