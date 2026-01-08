@@ -164,7 +164,7 @@ export function AppSidebar() {
     };
 
     return (
-        <div className="h-screen w-64 bg-slate-900 text-white flex flex-col border-r border-slate-800">
+        <div className="h-full w-64 bg-slate-900 text-white flex flex-col border-r border-slate-800">
             {/* Header */}
             <div className="p-6 border-b border-slate-800">
                 <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">

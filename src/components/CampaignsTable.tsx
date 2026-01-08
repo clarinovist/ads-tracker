@@ -107,12 +107,12 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Campaign Performance (Active)</CardTitle>
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 pb-4">
+                <CardTitle className="text-xl font-bold">Campaign Performance (Active)</CardTitle>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="ml-auto hidden h-8 lg:flex">
-                            View
+                        <Button variant="outline" size="sm" className="hidden sm:flex h-8">
+                            View Columns
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[150px]">
@@ -170,86 +170,88 @@ export default function CampaignsTable({ campaigns }: CampaignsTableProps) {
                 </DropdownMenu>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>
-                                <Button variant="ghost" onClick={() => handleSort('name')}>
-                                    Campaign Name <SortIcon />
-                                </Button>
-                            </TableHead>
-                            {/* Status column removed as per request */}
-                            {visibleColumns.spend && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('spend')}>
-                                    Spend <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.impressions && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('impressions')}>
-                                    Impr. <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.cpm && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('cpm')}>
-                                    CPM <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.clicks && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('clicks')}>
-                                    Clicks <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.ctr && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('ctr')}>
-                                    CTR <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.leads && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('leads')}>
-                                    Leads <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.cpc && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('cpc')}>
-                                    CPC <SortIcon />
-                                </Button>
-                            </TableHead>}
-                            {visibleColumns.cpl && <TableHead className="text-right">
-                                <Button variant="ghost" onClick={() => handleSort('cpl')}>
-                                    CPL <SortIcon />
-                                </Button>
-                            </TableHead>}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sorted.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell className="font-medium">
-                                    <div className="max-w-[300px] truncate" title={row.name}>
-                                        {row.name}
-                                    </div>
-                                </TableCell>
-                                {/* Status cell removed */}
-                                {visibleColumns.spend && <TableCell className="text-right">
-                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.spend)}
-                                </TableCell>}
-                                {visibleColumns.impressions && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.impressions)}</TableCell>}
-                                {visibleColumns.cpm && <TableCell className="text-right">
-                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpm)}
-                                </TableCell>}
-                                {visibleColumns.clicks && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.clicks)}</TableCell>}
-                                {visibleColumns.ctr && <TableCell className="text-right">{row.ctr.toFixed(2)}%</TableCell>}
-                                {visibleColumns.leads && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.leads)}</TableCell>}
-                                {visibleColumns.cpc && <TableCell className="text-right">
-                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpc)}
-                                </TableCell>}
-                                {visibleColumns.cpl && <TableCell className="text-right">
-                                    {row.cpl > 0 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpl) : '-'}
-                                </TableCell>}
+                <div className="overflow-x-auto -mx-6 px-6">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>
+                                    <Button variant="ghost" onClick={() => handleSort('name')}>
+                                        Campaign Name <SortIcon />
+                                    </Button>
+                                </TableHead>
+                                {/* Status column removed as per request */}
+                                {visibleColumns.spend && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('spend')}>
+                                        Spend <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.impressions && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('impressions')}>
+                                        Impr. <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.cpm && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('cpm')}>
+                                        CPM <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.clicks && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('clicks')}>
+                                        Clicks <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.ctr && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('ctr')}>
+                                        CTR <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.leads && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('leads')}>
+                                        Leads <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.cpc && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('cpc')}>
+                                        CPC <SortIcon />
+                                    </Button>
+                                </TableHead>}
+                                {visibleColumns.cpl && <TableHead className="text-right">
+                                    <Button variant="ghost" onClick={() => handleSort('cpl')}>
+                                        CPL <SortIcon />
+                                    </Button>
+                                </TableHead>}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {sorted.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell className="font-medium">
+                                        <div className="max-w-[300px] truncate" title={row.name}>
+                                            {row.name}
+                                        </div>
+                                    </TableCell>
+                                    {/* Status cell removed */}
+                                    {visibleColumns.spend && <TableCell className="text-right">
+                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.spend)}
+                                    </TableCell>}
+                                    {visibleColumns.impressions && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.impressions)}</TableCell>}
+                                    {visibleColumns.cpm && <TableCell className="text-right">
+                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpm)}
+                                    </TableCell>}
+                                    {visibleColumns.clicks && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.clicks)}</TableCell>}
+                                    {visibleColumns.ctr && <TableCell className="text-right">{row.ctr.toFixed(2)}%</TableCell>}
+                                    {visibleColumns.leads && <TableCell className="text-right">{new Intl.NumberFormat('id-ID').format(row.leads)}</TableCell>}
+                                    {visibleColumns.cpc && <TableCell className="text-right">
+                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpc)}
+                                    </TableCell>}
+                                    {visibleColumns.cpl && <TableCell className="text-right">
+                                        {row.cpl > 0 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(row.cpl) : '-'}
+                                    </TableCell>}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
         </Card>
     );

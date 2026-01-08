@@ -123,11 +123,11 @@ export default async function DashboardPage({
     const currencyFormatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 
     return (
-        <div className="space-y-8 pb-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200/60 pb-6">
+        <div className="space-y-6 md:space-y-8 pb-8">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-200/60 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Global Dashboard</h1>
-                    <p className="text-slate-500 mt-1">Omni-channel performance overview across all businesses.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Global Dashboard</h1>
+                    <p className="text-sm text-slate-500 mt-1">Omni-channel performance overview across all businesses.</p>
                 </div>
                 <DateRangePicker />
             </div>

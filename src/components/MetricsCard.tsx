@@ -32,8 +32,8 @@ export function MetricsCard({
             <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-medium text-slate-500 group-hover:text-slate-600 transition-colors">{title}</p>
-                        <h3 className="text-2xl font-bold mt-2 text-slate-900 tracking-tight">{value}</h3>
+                        <p className="text-xs md:text-sm font-medium text-slate-500 group-hover:text-slate-600 transition-colors uppercase tracking-wider">{title}</p>
+                        <h3 className="text-xl md:text-2xl font-bold mt-1 md:mt-2 text-slate-900 tracking-tight">{value}</h3>
                     </div>
                     <div className={cn("p-3 rounded-xl transition-colors", iconColor.replace("text-", "bg-").replace(/\d00$/, "50"), "group-hover:scale-105 duration-300")}>
                         <Icon className={cn("h-5 w-5", iconColor)} />

@@ -253,64 +253,67 @@ export default function BusinessList({ initialData }: { initialData: Business[] 
             </div>
 
             <div className="border rounded-md bg-white">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Ad Account ID</TableHead>
-                            <TableHead>Color</TableHead>
-                            <TableHead>Token</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {initialData.length === 0 ? (
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24">
-                                    No businesses found. Add one to get started.
-                                </TableCell>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Ad Account ID</TableHead>
+                                <TableHead>Color</TableHead>
+                                <TableHead>Token</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ) : (
-                            initialData.map((b) => (
-                                <TableRow key={b.id}>
-                                    <TableCell className="font-medium">{b.name}</TableCell>
-                                    <TableCell className="font-mono text-sm">{b.ad_account_id}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className="w-6 h-6 rounded-md border"
-                                                style={{ backgroundColor: b.color_code }}
-                                            />
-                                            <span className="text-xs text-muted-foreground">
-                                                {BUSINESS_COLORS.find(c => c.value === b.color_code)?.name || 'Custom'}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-xs text-muted-foreground font-mono">
-                                            {b.masked_token || 'Missing'}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={b.is_active ? "default" : "secondary"}>
-                                            {b.is_active ? "Active" : "Inactive"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleOpenEdit(b)}
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </Button>
+                        </TableHeader>
+                        <TableBody>
+                            {initialData.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center h-24">
+                                        No businesses found. Add one to get started.
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : (
+                                initialData.map((b) => (
+                                    <TableRow key={b.id}>
+                                        <TableCell className="font-medium whitespace-nowrap">{b.name}</TableCell>
+                                        <TableCell className="font-mono text-xs whitespace-nowrap">{b.ad_account_id}</TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-5 h-5 rounded-md border"
+                                                    style={{ backgroundColor: b.color_code }}
+                                                />
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {BUSINESS_COLORS.find(c => c.value === b.color_code)?.name || 'Custom'}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <span className="text-[10px] text-muted-foreground font-mono">
+                                                {b.masked_token || 'Missing'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={b.is_active ? "default" : "secondary"} className="text-[10px] py-0 h-5">
+                                                {b.is_active ? "Active" : "Inactive"}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleOpenEdit(b)}
+                                                className="h-8 w-8"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
         </>
     );

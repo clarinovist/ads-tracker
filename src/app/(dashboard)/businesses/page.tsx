@@ -31,8 +31,8 @@ export default async function BusinessesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Manage Businesses</h1>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Manage Businesses</h1>
             </div>
             <BusinessList initialData={plainBusinesses} />
         </div>

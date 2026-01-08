@@ -90,11 +90,20 @@ export function DateRangePicker({
         router.push(`${pathname}?${params.toString()}`);
     };
 
+    const [isMobile, setIsMobile] = React.useState(false);
+
+    React.useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     return (
         <div className={cn("grid gap-2", className)}>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <Select value={preset} onValueChange={handlePresetChange}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Select range" />
                     </SelectTrigger>
                     <SelectContent position="popper">
@@ -116,7 +125,7 @@ export function DateRangePicker({
                                 id="date"
                                 variant={"outline"}
                                 className={cn(
-                                    "w-[300px] justify-start text-left font-normal",
+                                    "w-full sm:w-[300px] justify-start text-left font-normal",
                                     !date && "text-muted-foreground"
                                 )}
                             >
@@ -142,7 +151,7 @@ export function DateRangePicker({
                                 defaultMonth={date?.from}
                                 selected={date}
                                 onSelect={handleSelect}
-                                numberOfMonths={2}
+                                numberOfMonths={isMobile ? 1 : 2}
                             />
                         </PopoverContent>
                     </Popover>

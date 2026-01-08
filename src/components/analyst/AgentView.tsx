@@ -241,19 +241,21 @@ export default function AgentView() {
     };
 
     return (
-        <div className="space-y-6 h-[calc(100vh-100px)] flex flex-col">
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between shrink-0">
+        <div className="space-y-4 md:space-y-6 h-full flex flex-col">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between shrink-0">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">AI Command Center</h2>
-                    <p className="text-muted-foreground">
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight">AI Command Center</h2>
+                    <p className="text-sm text-muted-foreground">
                         Tanya pertanyaan strategis tentang seluruh bisnis Anda.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <DateRangePicker
-                        date={date}
-                        setDate={(d) => setDate(d)}
-                    />
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex-1 sm:flex-none">
+                        <DateRangePicker
+                            date={date}
+                            setDate={(d) => setDate(d)}
+                        />
+                    </div>
 
                     <Sheet onOpenChange={(open) => open && fetchHistory()}>
                         <SheetTrigger asChild>
@@ -305,9 +307,9 @@ export default function AgentView() {
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3 flex-1 overflow-hidden min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden min-h-0">
                 {/* Controls Column */}
-                <div className="md:col-span-1 space-y-4 overflow-y-auto h-full pr-2">
+                <div className="lg:col-span-1 space-y-4 overflow-y-auto max-h-[300px] lg:max-h-full pr-2">
                     <Card>
                         <CardHeader>
                             <CardTitle>Configuration</CardTitle>
@@ -365,7 +367,7 @@ export default function AgentView() {
                 </div>
 
                 {/* Chat Column */}
-                <div className="md:col-span-2 flex flex-col h-full gap-4 min-h-0">
+                <div className="lg:col-span-2 flex flex-col h-full gap-4 min-h-0">
                     <Card className="flex-1 flex flex-col overflow-hidden shadow-sm border-muted min-h-0">
                         <CardContent className="flex-1 p-0 flex flex-col overflow-hidden relative min-h-0">
                             {/* Messages Area */}
