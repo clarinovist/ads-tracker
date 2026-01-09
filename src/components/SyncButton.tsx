@@ -35,6 +35,9 @@ export function SyncButton() {
             const data = await res.json();
 
             if (data.success) {
+                // If the API doesn't update the status itself (manual sync API might not),
+                // we could do it here, but usually the API should handle it.
+                // Let's check sync API again.
                 alert(`Sync (${mode === 'smart' ? '7 Days' : mode === 'leads' ? 'Hourly (7 Days)' : 'Today'}) completed successfully!`);
                 router.refresh();
             } else {

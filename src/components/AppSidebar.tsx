@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SyncButton } from "./SyncButton";
+import { SyncStatusIndicator } from "./SyncStatusIndicator";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -189,6 +190,7 @@ export function AppSidebar() {
 
             {/* Footer */}
             <div className="p-4 border-t border-indigo-800/30 flex flex-col gap-3">
+                <SyncStatusIndicator />
                 <SyncButton />
                 <button
                     onClick={handleLogout}
