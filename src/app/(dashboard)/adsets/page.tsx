@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { startOfMonth, endOfDay, subDays } from "date-fns";
+import { startOfMonth, endOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,7 @@ function AdSetsContent() {
     const searchParams = useSearchParams();
     const campaignId = searchParams.get("campaignId");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [adSets, setAdSets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE'>('ALL');
@@ -51,23 +52,22 @@ function AdSetsContent() {
         to: endOfDay(now)
     });
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const start = dateRange.from?.toISOString();
-            const end = dateRange.to?.toISOString();
-            const url = `/api/adsets?startDate=${start}&endDate=${end}${campaignId ? `&campaignId=${campaignId}` : ''}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            setAdSets(data);
-        } catch (error) {
-            console.error("Error fetching ad sets:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const start = dateRange.from?.toISOString();
+                const end = dateRange.to?.toISOString();
+                const url = `/api/adsets?startDate=${start}&endDate=${end}${campaignId ? `&campaignId=${campaignId}` : ''}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                setAdSets(data);
+            } catch (error) {
+                console.error("Error fetching ad sets:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchData();
     }, [dateRange, campaignId]);
 
@@ -181,6 +181,7 @@ function AdSetsContent() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <DateRangePicker date={dateRange} setDate={setDateRange as any} />
                     </div>
                 </div>

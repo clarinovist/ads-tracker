@@ -3,7 +3,7 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import CampaignsTable, { CampaignRow } from '@/components/CampaignsTable';
 import { DashboardTabs } from '@/components/DashboardTabs';
 import AdsTable, { AdRow } from '@/components/AdsTable';
-import { startOfDay, endOfDay, subDays, startOfMonth } from 'date-fns';
+import { startOfDay, endOfDay, startOfMonth } from 'date-fns';
 import { MetricsCard } from '@/components/MetricsCard';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,14 +38,14 @@ export default async function DashboardPage({
     const insights = await prisma.dailyInsight.findMany({
         where: {
             date: { gte: fromDate, lte: toDate },
-            business_id: { in: businesses.map((b: any) => b.id) }
+            business_id: { in: businesses.map((b) => b.id) }
         },
         orderBy: { date: 'asc' },
     });
 
     // 2. Fetch Campaigns with aggregated insights
     const campaignsData = await prisma.campaign.findMany({
-        where: { business_id: { in: businesses.map((b: any) => b.id) } },
+        where: { business_id: { in: businesses.map((b) => b.id) } },
         include: {
             insights: {
                 where: { date: { gte: fromDate, lte: toDate } }
@@ -55,7 +55,7 @@ export default async function DashboardPage({
 
     // 3. Fetch Ads with aggregated insights
     const adsData = await prisma.ad.findMany({
-        where: { ad_set: { campaign: { business_id: { in: businesses.map((b: any) => b.id) } } } },
+        where: { ad_set: { campaign: { business_id: { in: businesses.map((b) => b.id) } } } },
         include: {
             insights: {
                 where: { date: { gte: fromDate, lte: toDate } }
@@ -70,6 +70,7 @@ export default async function DashboardPage({
         spend: 0, impressions: 0, clicks: 0, leads: 0, conversions: 0, revenue: 0
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insights.forEach((i: any) => {
         totalKpi.spend += i.spend;
         totalKpi.impressions += i.impressions;
@@ -78,6 +79,7 @@ export default async function DashboardPage({
         totalKpi.conversions += (i.conversions || 0);
         totalKpi.revenue += (i.revenue || 0);
     });
+
 
     // Derived Metrics
     const globalCTR = totalKpi.impressions > 0 ? (totalKpi.clicks / totalKpi.impressions) * 100 : 0;

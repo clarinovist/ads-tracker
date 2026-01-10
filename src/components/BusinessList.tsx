@@ -52,7 +52,8 @@ function VerifyButton({ adAccountId, accessToken }: { adAccountId: string, acces
                 setStatus('error');
                 setMsg(data.error || 'Verification failed');
             }
-        } catch (e) {
+        } catch (error) {
+            console.error(error);
             setStatus('error');
             setMsg('Network error');
         }
@@ -114,6 +115,7 @@ export default function BusinessList({ initialData }: { initialData: Business[] 
         e.preventDefault();
         setLoading(true);
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const payload: any = {
                 name: formData.name,
                 ad_account_id: formData.ad_account_id,
@@ -134,6 +136,7 @@ export default function BusinessList({ initialData }: { initialData: Business[] 
             let res;
             if (editingBusiness) {
                 // Update existing business
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { ad_account_id, ...updatePayload } = payload; // Can't update ad_account_id
                 res = await fetch(`/api/businesses/${editingBusiness.id}`, {
                     method: 'PUT',

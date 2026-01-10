@@ -3,15 +3,13 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import OverviewCharts from '@/components/OverviewCharts';
 import CampaignsTable, { CampaignRow } from '@/components/CampaignsTable';
 import AdsTable, { AdRow } from '@/components/AdsTable';
-import { startOfMonth, startOfDay, endOfDay, format } from 'date-fns';
+import { startOfDay, endOfDay, format } from 'date-fns';
 import { MetricsCard } from '@/components/MetricsCard';
 import {
     DollarSign,
     Users,
     MousePointer2,
     BarChart3,
-    Target,
-    Zap,
     ArrowLeft
 } from "lucide-react";
 import Link from 'next/link';
@@ -81,6 +79,7 @@ export default async function BusinessAnalyticsPage({
         spend: 0, impressions: 0, clicks: 0, leads: 0, conversions: 0, revenue: 0
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insights.forEach((i: any) => {
         totalKpi.spend += i.spend;
         totalKpi.impressions += i.impressions;
@@ -92,12 +91,11 @@ export default async function BusinessAnalyticsPage({
 
     // Derived Metrics
     const ctr = totalKpi.impressions > 0 ? (totalKpi.clicks / totalKpi.impressions) * 100 : 0;
-    const cpl = totalKpi.leads > 0 ? totalKpi.spend / totalKpi.leads : 0;
     const cpm = totalKpi.impressions > 0 ? (totalKpi.spend / totalKpi.impressions) * 1000 : 0;
-    const cpc = totalKpi.clicks > 0 ? (totalKpi.spend / totalKpi.clicks) : 0;
 
     // Chart Data (reformat for OverviewCharts)
     // OverviewCharts expects data keys like `${business_id}_spend`.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chartData = insights.map((i: any) => ({
         date: format(i.date, 'yyyy-MM-dd'),
         [`${id}_spend`]: i.spend,

@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Settings as SettingsIcon,
-    Bell,
     Lock,
     Database,
-    Globe,
     UserCircle,
     Loader2,
     CheckCircle2,
@@ -104,7 +101,7 @@ export default function SettingsPage() {
             } else {
                 setProfileMessage({ type: 'error', text: data.error || 'Failed to update profile' });
             }
-        } catch (error) {
+        } catch {
             setProfileMessage({ type: 'error', text: 'An unexpected error occurred' });
         } finally {
             setIsProfileSaving(false);
@@ -139,7 +136,7 @@ export default function SettingsPage() {
             } else {
                 setPasswordMessage({ type: 'error', text: data.error || 'Failed to update password' });
             }
-        } catch (error) {
+        } catch {
             setPasswordMessage({ type: 'error', text: 'An unexpected error occurred' });
         } finally {
             setIsPasswordSaving(false);

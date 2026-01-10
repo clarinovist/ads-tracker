@@ -48,7 +48,9 @@ export async function GET(req: Request) {
 
         return NextResponse.json(hourlyDistribution);
 
-    } catch (error: any) {
+        return NextResponse.json(hourlyDistribution);
+
+    } catch (error: unknown) {
         console.error('Hourly Distribution Error:', error);
         return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
     }

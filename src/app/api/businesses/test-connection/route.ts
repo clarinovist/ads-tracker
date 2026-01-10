@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { fetchAdAccountInsights } from '@/lib/meta';
 
 export async function POST(req: Request) {
     try {
@@ -17,7 +16,6 @@ export async function POST(req: Request) {
         // If the token or ID is invalid, this will throw or return an error from Meta.
         // We use a safe date (e.g., yesterday) to ensure data *might* be there, 
         // but really we just check if the request is authorized.
-        const today = new Date().toISOString().split('T')[0];
 
         try {
             // We reuse the existing fetch function but we need to handle the case where it might fail
@@ -45,11 +43,12 @@ export async function POST(req: Request) {
                 }
             });
 
-        } catch (e: any) {
-            return NextResponse.json({ success: false, error: e.message }, { status: 500 });
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            return NextResponse.json({ success: false, error: msg }, { status: 500 });
         }
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

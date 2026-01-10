@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MetricsCard } from "@/components/MetricsCard";
+// import { MetricsCard } from "@/components/MetricsCard";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import {
     Dialog,
@@ -12,14 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import {
     Image as ImageIcon,
-    Users,
-    DollarSign,
     PlayCircle,
     Filter,
     Sparkles
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { startOfMonth, endOfDay, format, startOfDay, subDays } from "date-fns";
+import { startOfMonth, endOfDay, format, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +44,7 @@ function AdsContent() {
     const fromParam = searchParams.get('from');
     const toParam = searchParams.get('to');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [ads, setAds] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE'>('ALL');
@@ -54,26 +53,29 @@ function AdsContent() {
         from: fromParam ? startOfDay(new Date(fromParam)) : startOfMonth(now),
         to: toParam ? endOfDay(new Date(toParam)) : endOfDay(now)
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [selectedAd, setSelectedAd] = useState<any>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [selectedAdForAnalysis, setSelectedAdForAnalysis] = useState<any>(null);
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const start = format(dateRange.from, 'yyyy-MM-dd');
-            const end = format(dateRange.to, 'yyyy-MM-dd');
-            const url = `/api/ads?startDate=${start}&endDate=${end}${adSetId ? `&adSetId=${adSetId}` : ''}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            setAds(data);
-        } catch (error) {
-            console.error("Error fetching ads:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Moved fetchData inside useEffect to fix dependency warning
 
     useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const start = format(dateRange.from, 'yyyy-MM-dd');
+                const end = format(dateRange.to, 'yyyy-MM-dd');
+                const url = `/api/ads?startDate=${start}&endDate=${end}${adSetId ? `&adSetId=${adSetId}` : ''}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                setAds(data);
+            } catch (error) {
+                console.error("Error fetching ads:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
         fetchData();
     }, [dateRange, adSetId]);
 
@@ -112,6 +114,7 @@ function AdsContent() {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <DateRangePicker date={dateRange} setDate={setDateRange as any} />
                 </div>
             </div>
@@ -136,11 +139,14 @@ function AdsContent() {
                                 {/* Creative Preview */}
                                 <div className="relative aspect-square bg-slate-100 overflow-hidden">
                                     {(ad.thumbnail_url || (ad.creative_type !== 'VIDEO' && ad.creative_url)) ? (
-                                        <img
-                                            src={ad.thumbnail_url || (ad.creative_type !== 'VIDEO' ? ad.creative_url : '')}
-                                            alt={ad.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        />
+                                        <>
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={ad.thumbnail_url || (ad.creative_type !== 'VIDEO' ? ad.creative_url : '')}
+                                                alt={ad.name}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
+                                        </>
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                                             <ImageIcon className="h-12 w-12" />
@@ -186,7 +192,7 @@ function AdsContent() {
                                         {(ad.creative_title || ad.creative_body) && (
                                             <div className="text-xs text-slate-500 space-y-0.5 pt-1">
                                                 {ad.creative_title && (
-                                                    <p className="font-medium text-slate-700 line-clamp-1">"{ad.creative_title}"</p>
+                                                    <p className="font-medium text-slate-700 line-clamp-1">&quot;{ad.creative_title}&quot;</p>
                                                 )}
                                                 {ad.creative_body && (
                                                     <p className="line-clamp-2 italic">{ad.creative_body}</p>
@@ -252,11 +258,14 @@ function AdsContent() {
                             {/* Creative Preview */}
                             <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative">
                                 {(selectedAd.thumbnail_url || (selectedAd.creative_type !== 'VIDEO' && selectedAd.creative_url)) ? (
-                                    <img
-                                        src={selectedAd.thumbnail_url || (selectedAd.creative_type !== 'VIDEO' ? selectedAd.creative_url : '')}
-                                        alt={selectedAd.name}
-                                        className="w-full h-full object-contain"
-                                    />
+                                    <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={selectedAd.thumbnail_url || (selectedAd.creative_type !== 'VIDEO' ? selectedAd.creative_url : '')}
+                                            alt={selectedAd.name}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </>
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-300">
                                         <ImageIcon className="h-16 w-16" />
@@ -294,6 +303,7 @@ function AdsContent() {
                                                     Headline Variations ({selectedAd.creative_dynamic_data.titles.length})
                                                 </label>
                                                 <div className="mt-2 space-y-2">
+                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                     {selectedAd.creative_dynamic_data.titles.map((title: any, idx: number) => (
                                                         <div key={idx} className="p-2 bg-white border border-slate-200 rounded text-xs text-slate-700 flex gap-2">
                                                             <span className="font-bold text-slate-400 shrink-0">#{idx + 1}</span>
@@ -311,6 +321,7 @@ function AdsContent() {
                                                     Primary Text Variations ({selectedAd.creative_dynamic_data.bodies.length})
                                                 </label>
                                                 <div className="mt-2 space-y-2">
+                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                     {selectedAd.creative_dynamic_data.bodies.map((body: any, idx: number) => (
                                                         <div key={idx} className="p-2 bg-white border border-slate-200 rounded text-xs text-slate-700 flex gap-2">
                                                             <span className="font-bold text-slate-400 shrink-0">#{idx + 1}</span>
@@ -366,7 +377,6 @@ function AdsContent() {
                             <AdCreativeAnalysis
                                 adData={selectedAdForAnalysis}
                                 date={dateRange}
-                                isOpen={!!selectedAdForAnalysis}
                             />
                         )}
                     </div>

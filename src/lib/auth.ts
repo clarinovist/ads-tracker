@@ -8,7 +8,13 @@ const key = new TextEncoder().encode(secretKey);
 // Session duration: 30 minutes
 const SESSION_DURATION = 30 * 60 * 1000;
 
-export async function encrypt(payload: any) {
+interface JWTPayload extends Record<string, unknown> {
+    user: { id: string; email: string; role: string };
+    expires: Date | string | number;
+}
+
+
+export async function encrypt(payload: JWTPayload) {
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
@@ -16,11 +22,11 @@ export async function encrypt(payload: any) {
         .sign(key);
 }
 
-export async function decrypt(input: string): Promise<any> {
+export async function decrypt(input: string): Promise<JWTPayload> {
     const { payload } = await jwtVerify(input, key, {
         algorithms: ["HS256"],
     });
-    return payload;
+    return payload as unknown as JWTPayload;
 }
 
 export async function login(user: { id: string; email: string; role: string }) {
@@ -52,7 +58,7 @@ export async function updateSession(request: NextRequest) {
         name: "session",
         value: await encrypt(parsed),
         httpOnly: true,
-        expires: parsed.expires,
+        expires: parsed.expires as Date,
     });
     return res;
 }

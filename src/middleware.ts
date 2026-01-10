@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
                     return NextResponse.next();
                 }
                 return NextResponse.redirect(new URL('/', request.url));
-            } catch (e) {
+            } catch {
                 // Invalid session, let them go to login
             }
         }
@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
     try {
         await decrypt(session);
         return await updateSession(request);
-    } catch (error) {
+    } catch {
         return NextResponse.redirect(new URL('/login', request.url));
     }
 }

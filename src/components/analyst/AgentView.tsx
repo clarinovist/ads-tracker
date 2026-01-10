@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Sparkles, AlertCircle, Send, Copy, RotateCcw, History, MessageSquarePlus, Trash2 } from 'lucide-react';
+import { Loader2, Sparkles, AlertCircle, Send, Copy, History, MessageSquarePlus, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -186,9 +186,13 @@ export default function AgentView() {
                 ));
             }
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Analysis Error:", err);
-            setError(err);
+            if (err instanceof Error) {
+                setError(err);
+            } else {
+                setError(new Error(String(err)));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -400,14 +404,14 @@ export default function AgentView() {
                                                 <ReactMarkdown
                                                     remarkPlugins={[remarkGfm]}
                                                     components={{
-                                                        p: ({ node, ...props }) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-                                                        ul: ({ node, ...props }) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2" {...props} />,
-                                                        ol: ({ node, ...props }) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2" {...props} />,
-                                                        li: ({ node, ...props }) => <li className="leading-7" {...props} />,
-                                                        h1: ({ node, ...props }) => <h1 className="mt-8 mb-4 text-xl font-bold" {...props} />,
-                                                        h2: ({ node, ...props }) => <h2 className="mt-8 mb-4 text-lg font-bold" {...props} />,
-                                                        h3: ({ node, ...props }) => <h3 className="mt-6 mb-3 text-base font-bold" {...props} />,
-                                                        blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props} />,
+                                                        p: ({ ...props }) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+                                                        ul: ({ ...props }) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2" {...props} />,
+                                                        ol: ({ ...props }) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2" {...props} />,
+                                                        li: ({ ...props }) => <li className="leading-7" {...props} />,
+                                                        h1: ({ ...props }) => <h1 className="mt-8 mb-4 text-xl font-bold" {...props} />,
+                                                        h2: ({ ...props }) => <h2 className="mt-8 mb-4 text-lg font-bold" {...props} />,
+                                                        h3: ({ ...props }) => <h3 className="mt-6 mb-3 text-base font-bold" {...props} />,
+                                                        blockquote: ({ ...props }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props} />,
                                                     }}
                                                 >
                                                     {m.content}

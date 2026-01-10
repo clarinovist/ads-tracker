@@ -104,7 +104,7 @@ export default function LiveDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-500">Today's Spend</CardTitle>
+                                <CardTitle className="text-sm font-medium text-slate-500">Today&apos;s Spend</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{formatCurrency(data.global.spend)}</div>
@@ -112,7 +112,7 @@ export default function LiveDashboard() {
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-500">Today's Leads</CardTitle>
+                                <CardTitle className="text-sm font-medium text-slate-500">Today&apos;s Leads</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{formatNumber(data.global.leads)}</div>
@@ -120,7 +120,7 @@ export default function LiveDashboard() {
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-500">Today's CPL</CardTitle>
+                                <CardTitle className="text-sm font-medium text-slate-500">Today&apos;s CPL</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">{formatCurrency(data.global.cpl)}</div>
@@ -128,7 +128,7 @@ export default function LiveDashboard() {
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-slate-500">Today's ROAS</CardTitle>
+                                <CardTitle className="text-sm font-medium text-slate-500">Today&apos;s ROAS</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-slate-400">-</div>

@@ -4,12 +4,40 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { formatCurrency } from "@/lib/utils";
-import { useState, useEffect } from "react";
 
 interface ChartData {
     date: string;
     [key: string]: string | number; // multiple businesses
 }
+
+const CustomTooltip = ({ active, payload, label, formatter }: {
+    active?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload?: any[];
+    label?: string;
+    formatter?: (value: number) => string;
+}) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white/95 backdrop-blur-sm p-4 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.2)] rounded-xl text-sm">
+                <p className="font-semibold text-slate-800 mb-2">{label}</p>
+                <div className="space-y-1">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {payload.map((entry: any, index: number) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                            <span className="text-slate-500">{entry.name}:</span>
+                            <span className="font-medium text-slate-900">
+                                {formatter ? formatter(entry.value) : entry.value}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
 
 export default function OverviewCharts({
     data,
@@ -18,50 +46,6 @@ export default function OverviewCharts({
     data: ChartData[],
     businesses: { id: string; name: string; color_code: string }[],
 }) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) {
-        return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {[...Array(2)].map((_, i) => (
-                    <Card key={i} className="border-slate-100 shadow-sm">
-                        <CardHeader>
-                            <div className="h-6 w-48 bg-slate-100 rounded animate-pulse" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-[300px] w-full bg-slate-50/50 rounded-lg animate-pulse" />
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-        );
-    }
-
-    const CustomTooltip = ({ active, payload, label, formatter }: any) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-white/95 backdrop-blur-sm p-4 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.2)] rounded-xl text-sm">
-                    <p className="font-semibold text-slate-800 mb-2">{label}</p>
-                    <div className="space-y-1">
-                        {payload.map((entry: any, index: number) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                                <span className="text-slate-500">{entry.name}:</span>
-                                <span className="font-medium text-slate-900">
-                                    {formatter ? formatter(entry.value) : entry.value}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        }
-        return null;
-    };
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

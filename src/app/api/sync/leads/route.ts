@@ -93,9 +93,10 @@ export async function POST(req: Request) {
             details: results
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Sync Leads Error:', error);
-        return NextResponse.json({ error: error.message || 'Sync failed' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : 'Sync failed';
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }
 

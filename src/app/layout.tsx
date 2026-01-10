@@ -22,6 +22,7 @@ export default function RootLayout({
           fontFamily: systemSans,
           "--font-geist-sans": systemSans,
           "--font-geist-mono": systemMono
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any}
         className="antialiased"
       >

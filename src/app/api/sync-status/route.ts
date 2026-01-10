@@ -12,7 +12,7 @@ export async function GET() {
             lastSyncAt: lastSync?.value || null,
             status: status?.value || 'idle'
         });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch sync status' }, { status: 500 });
     }
 }

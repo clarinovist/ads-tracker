@@ -5,9 +5,6 @@ import {
     fetchAdSets,
     fetchAds,
     MetaInsight,
-    MetaCampaign,
-    MetaAdSet,
-    MetaAd
 } from "@/lib/meta";
 import { startOfDay, format } from "date-fns";
 
@@ -55,7 +52,7 @@ export async function syncDailyInsights(targetDate?: Date) {
     }
 }
 
-export async function syncBusinessData(business: any, date: Date) {
+export async function syncBusinessData(business: { id: string; name: string; ad_account_id: string; access_token?: string | null }, date: Date) {
     console.log(`Processing Business: ${business.name} (${business.ad_account_id})`);
 
     if (!business.access_token) {
@@ -196,36 +193,31 @@ async function syncAds(businessId: string, adAccountId: string, dateStr: string,
 
             if (ad.creative.asset_feed_spec) {
                 // Store the full dynamic data
-                // We cast to any because Prisma expects a simpler Json type but this is a complex object
-                (ad as any).creative_dynamic_data = ad.creative.asset_feed_spec;
+                // We cast to Record<string, unknown> which is safer than any
+                (ad as unknown as Record<string, unknown>).creative_dynamic_data = ad.creative.asset_feed_spec;
             }
         }
 
+        const adData: Record<string, unknown> = {
+            name: ad.name,
+            status: ad.effective_status || ad.status,
+            ad_set_id: ad.adset_id,
+            creative_url: creativeUrl,
+            thumbnail_url: thumbnailUrl,
+            creative_type: creativeType,
+            creative_body: creativeBody,
+            creative_title: creativeTitle,
+            creative_dynamic_data: (ad as unknown as Record<string, unknown>).creative_dynamic_data || null
+        };
+
         await prisma.ad.upsert({
             where: { id: ad.id },
-            update: {
-                name: ad.name,
-                status: ad.effective_status || ad.status,
-                ad_set_id: ad.adset_id,
-                creative_url: creativeUrl,
-                thumbnail_url: thumbnailUrl,
-                creative_type: creativeType,
-                creative_body: creativeBody,
-                creative_title: creativeTitle,
-                creative_dynamic_data: (ad as any).creative_dynamic_data || null
-            },
+            update: adData,
             create: {
                 id: ad.id,
-                name: ad.name,
-                status: ad.effective_status || ad.status,
-                ad_set_id: ad.adset_id,
-                creative_url: creativeUrl,
-                thumbnail_url: thumbnailUrl,
-                creative_type: creativeType,
-                creative_body: creativeBody,
-                creative_title: creativeTitle,
-                creative_dynamic_data: (ad as any).creative_dynamic_data || null
-            }
+                ...adData
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any // Prisma upsert types can be strict, any is acceptable here for rapid fix
         });
     }
 
@@ -298,8 +290,9 @@ async function syncHourlyInsights(businessId: string, adAccountId: string, dateS
         } else {
             console.log(`   ℹ️ No hourly records found.`);
         }
-    } catch (err: any) {
-        console.error(`   ❌ Failed to sync hourly stats:`, err.message);
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`   ❌ Failed to sync hourly stats:`, message);
     }
 }
 
@@ -514,8 +507,9 @@ async function fetchBreakdownStats(
             for (const action of item.actions) {
                 if (leadActionTypes.includes(action.action_type)) {
                     // This action object should have action_destination because we requested it
-                    const dest = (action as any).action_destination?.toLowerCase() || '';
-                    const val = parseInt(action.value || '0');
+                    const actionData = action as { action_destination?: string; value?: string };
+                    const dest = actionData.action_destination?.toLowerCase() || '';
+                    const val = parseInt(actionData.value || '0');
 
                     if (dest.includes('whatsapp')) {
                         stats[id].whatsapp += val;

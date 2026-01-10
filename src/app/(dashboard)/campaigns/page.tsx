@@ -8,7 +8,7 @@ import {
     TrendingUp,
     DollarSign,
 } from "lucide-react";
-import { startOfMonth, endOfDay, format, startOfDay, subDays } from "date-fns";
+import { startOfMonth, endOfDay, format, startOfDay } from "date-fns";
 import { Suspense } from "react";
 import CampaignsTable, { CampaignRow } from "@/components/CampaignsTable";
 import { useSearchParams } from "next/navigation";
@@ -18,8 +18,8 @@ function CampaignsContent() {
     const fromParam = searchParams.get('from');
     const toParam = searchParams.get('to');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [campaigns, setCampaigns] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
 
     const now = new Date();
     const [dateRange, setDateRange] = useState({
@@ -27,22 +27,19 @@ function CampaignsContent() {
         to: toParam ? endOfDay(new Date(toParam)) : endOfDay(now)
     });
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const start = format(dateRange.from, 'yyyy-MM-dd');
-            const end = format(dateRange.to, 'yyyy-MM-dd');
-            const res = await fetch(`/api/campaigns?startDate=${start}&endDate=${end}`);
-            const data = await res.json();
-            setCampaigns(data);
-        } catch (error) {
-            console.error("Error fetching campaigns:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const start = format(dateRange.from, 'yyyy-MM-dd');
+                const end = format(dateRange.to, 'yyyy-MM-dd');
+                const res = await fetch(`/api/campaigns?startDate=${start}&endDate=${end}`);
+                const data = await res.json();
+                setCampaigns(data);
+            } catch (error) {
+                console.error("Error fetching campaigns:", error);
+            } finally {
+            }
+        };
         fetchData();
     }, [dateRange]);
 
@@ -56,7 +53,7 @@ function CampaignsContent() {
         impressions: acc.impressions + camp.aggregate.impressions,
     }), { spend: 0, leads: 0, clicks: 0, impressions: 0 });
 
-    const avgRoas = totals.spend > 0 ? totals.revenue / totals.spend : 0;
+
 
     // Transform to CampaignRow format
     const campaignRows: CampaignRow[] = visibleCampaigns.map(c => ({
@@ -79,6 +76,7 @@ function CampaignsContent() {
                     </div>
                     <p className="text-slate-500 ml-3">Analyze campaign performance for the selected period.</p>
                 </div>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <DateRangePicker date={dateRange} setDate={setDateRange as any} />
             </div>
 

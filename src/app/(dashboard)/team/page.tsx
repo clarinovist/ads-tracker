@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function TeamPage() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 

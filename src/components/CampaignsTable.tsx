@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/table";
 import { ArrowUpDown, MoreVertical, Target, TrendingUp } from "lucide-react";
 import { Button } from "./ui/button";
+
+const SortIcon = () => <ArrowUpDown className="ml-1 h-3 w-3" />;
+
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -146,8 +149,6 @@ export default function CampaignsTable({ campaigns, maxSpend }: CampaignsTablePr
         }
         return sortOrder === 'asc' ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
     });
-
-    const SortIcon = () => <ArrowUpDown className="ml-1 h-3 w-3" />;
 
     return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">

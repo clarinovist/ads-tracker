@@ -8,6 +8,7 @@ export default async function BusinessesPage() {
         orderBy: { created_at: 'asc' },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plainBusinesses = businesses.map((b: any) => {
         const token = b.access_token;
         let maskedToken = null;

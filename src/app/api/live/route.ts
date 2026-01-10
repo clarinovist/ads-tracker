@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { fetchInsights, MetaInsight } from '@/lib/meta';
+import { fetchInsights } from '@/lib/meta';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +48,7 @@ export async function GET() {
 
                     breakdownResults[0].actions.forEach(action => {
                         if (leadActionTypes.includes(action.action_type)) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const dest = (action as any).action_destination?.toLowerCase() || '';
                             const val = parseInt(action.value || '0');
 
@@ -105,6 +106,7 @@ export async function GET() {
             }
         }));
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const validResults = results.filter(r => r !== null) as any[];
 
         // Global Aggregate

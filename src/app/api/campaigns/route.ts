@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const endDateStr = searchParams.get("endDate");
     const status = searchParams.get("status");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
     if (businessId) where.business_id = businessId;
     if (status) where.status = status;

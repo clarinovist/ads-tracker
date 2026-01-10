@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, ChevronDown, Calendar, History, Users } from "lucide-react";
+import { RefreshCw, ChevronDown, Calendar, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {

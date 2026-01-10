@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+const SortIcon = () => <ArrowUpDown className="ml-1 h-3 w-3" />;
 
 export interface AdRow {
     id: string;
@@ -127,7 +128,7 @@ export default function AdsTable({ ads, maxSpend }: AdsTableProps) {
     // Limit to top 50
     const displayAds = sorted.slice(0, 50);
 
-    const SortIcon = () => <ArrowUpDown className="ml-1 h-3 w-3" />;
+
 
     return (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">

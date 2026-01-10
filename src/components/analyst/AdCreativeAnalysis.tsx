@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Send, Sparkles, AlertCircle, Image as ImageIcon, PlayCircle } from 'lucide-react';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -33,10 +34,9 @@ interface AdData {
 interface AdCreativeAnalysisProps {
     adData: AdData;
     date: { from: Date; to: Date };
-    isOpen: boolean;
 }
 
-export default function AdCreativeAnalysis({ adData, date, isOpen }: AdCreativeAnalysisProps) {
+export default function AdCreativeAnalysis({ adData, date }: AdCreativeAnalysisProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -100,8 +100,8 @@ export default function AdCreativeAnalysis({ adData, date, isOpen }: AdCreativeA
                 setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: accumulatedResponse } : m));
             }
 
-        } catch (err: any) {
-            setError(err);
+        } catch (err: unknown) {
+            setError(err as Error);
         } finally {
             setIsLoading(false);
         }
@@ -132,7 +132,7 @@ export default function AdCreativeAnalysis({ adData, date, isOpen }: AdCreativeA
                     {/* Image Preview */}
                     <div className="w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-slate-200 border border-slate-300 relative">
                         {imageUrl ? (
-                            <img src={imageUrl} alt={adData.name} className="w-full h-full object-cover" />
+                            <Image src={imageUrl} alt={adData.name} fill className="object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-400">
                                 <ImageIcon className="h-8 w-8" />
@@ -205,14 +205,14 @@ export default function AdCreativeAnalysis({ adData, date, isOpen }: AdCreativeA
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
-                                        p: ({ node, ...props }) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-                                        ul: ({ node, ...props }) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2" {...props} />,
-                                        ol: ({ node, ...props }) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2" {...props} />,
-                                        li: ({ node, ...props }) => <li className="leading-7" {...props} />,
-                                        h1: ({ node, ...props }) => <h1 className="mt-8 mb-4 text-xl font-bold" {...props} />,
-                                        h2: ({ node, ...props }) => <h2 className="mt-8 mb-4 text-lg font-bold" {...props} />,
-                                        h3: ({ node, ...props }) => <h3 className="mt-6 mb-3 text-base font-bold" {...props} />,
-                                        blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props} />,
+                                        p: ({ ...props }) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+                                        ul: ({ ...props }) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2" {...props} />,
+                                        ol: ({ ...props }) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2" {...props} />,
+                                        li: ({ ...props }) => <li className="leading-7" {...props} />,
+                                        h1: ({ ...props }) => <h1 className="mt-8 mb-4 text-xl font-bold" {...props} />,
+                                        h2: ({ ...props }) => <h2 className="mt-8 mb-4 text-lg font-bold" {...props} />,
+                                        h3: ({ ...props }) => <h3 className="mt-6 mb-3 text-base font-bold" {...props} />,
+                                        blockquote: ({ ...props }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props} />,
                                     }}
                                 >
                                     {m.content}

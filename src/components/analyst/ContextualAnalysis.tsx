@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, Sparkles, AlertCircle, Copy } from 'lucide-react';
+import { Loader2, Send, Sparkles, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -83,8 +83,12 @@ export default function ContextualAnalysis({ adSetId, adSetName, date, isOpen }:
                 setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: accumulatedResponse } : m));
             }
 
-        } catch (err: any) {
-            setError(err);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err);
+            } else {
+                setError(new Error(String(err)));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -111,7 +115,7 @@ export default function ContextualAnalysis({ adSetId, adSetName, date, isOpen }:
                 {messages.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center p-4">
                         <Sparkles className="h-12 w-12 mb-4 text-emerald-500/50" />
-                        <p className="font-medium text-slate-600 mb-2">Analisa AI untuk "{adSetName}"</p>
+                        <p className="font-medium text-slate-600 mb-2">Analisa AI untuk &quot;{adSetName}&quot;</p>
                         <p className="text-sm">Tanyakan performa, insight biaya, atau saran optimasi.</p>
                         <div className="flex flex-wrap gap-2 justify-center mt-4">
                             {["Analisa performa Ad Set ini", "Kenapa biayanya mahal?", "Apakah ini profitable?"].map(q => (
@@ -137,14 +141,14 @@ export default function ContextualAnalysis({ adSetId, adSetName, date, isOpen }:
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
-                                        p: ({ node, ...props }) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-                                        ul: ({ node, ...props }) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2" {...props} />,
-                                        ol: ({ node, ...props }) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2" {...props} />,
-                                        li: ({ node, ...props }) => <li className="leading-7" {...props} />,
-                                        h1: ({ node, ...props }) => <h1 className="mt-8 mb-4 text-xl font-bold" {...props} />,
-                                        h2: ({ node, ...props }) => <h2 className="mt-8 mb-4 text-lg font-bold" {...props} />,
-                                        h3: ({ node, ...props }) => <h3 className="mt-6 mb-3 text-base font-bold" {...props} />,
-                                        blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props} />,
+                                        p: ({ ...props }) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+                                        ul: ({ ...props }) => <ul className="my-4 ml-6 list-disc [&>li]:mt-2" {...props} />,
+                                        ol: ({ ...props }) => <ol className="my-4 ml-6 list-decimal [&>li]:mt-2" {...props} />,
+                                        li: ({ ...props }) => <li className="leading-7" {...props} />,
+                                        h1: ({ ...props }) => <h1 className="mt-8 mb-4 text-xl font-bold" {...props} />,
+                                        h2: ({ ...props }) => <h2 className="mt-8 mb-4 text-lg font-bold" {...props} />,
+                                        h3: ({ ...props }) => <h3 className="mt-6 mb-3 text-base font-bold" {...props} />,
+                                        blockquote: ({ ...props }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4" {...props} />,
                                     }}
                                 >
                                     {m.content}

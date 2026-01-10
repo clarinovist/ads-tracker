@@ -42,7 +42,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         };
 
         return NextResponse.json(secureBusiness);
-    } catch (err) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update business' }, { status: 500 });
     }
 }
@@ -54,7 +54,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
             where: { id },
         });
         return NextResponse.json({ success: true });
-    } catch (err) {
+    } catch {
         return NextResponse.json({ error: 'Failed to delete business' }, { status: 500 });
     }
 }

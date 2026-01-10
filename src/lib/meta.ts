@@ -1,4 +1,4 @@
-import { ENV } from './env';
+
 
 export interface MetaInsight {
     spend: string;

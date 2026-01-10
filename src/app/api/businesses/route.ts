@@ -27,7 +27,7 @@ export async function GET() {
         });
 
         // Map to secure response with masked token
-        const secureBusinesses = businesses.map((b: any) => {
+        const secureBusinesses = businesses.map((b) => {
             const token = b.access_token;
             let maskedToken = null;
             if (token && token.length > 4) {
@@ -49,7 +49,7 @@ export async function GET() {
         });
 
         return NextResponse.json(secureBusinesses);
-    } catch (err) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch businesses' }, { status: 500 });
     }
 }

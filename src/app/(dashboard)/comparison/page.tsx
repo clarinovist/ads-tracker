@@ -57,8 +57,10 @@ export default async function ComparisonPage({
     });
 
     // Chart Data - grouped by date with business-specific series
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const groupedData: Record<string, any> = {};
     businesses.forEach(biz => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         biz.daily_insights.forEach((i: any) => {
             const dateKey = format(i.date, 'yyyy-MM-dd');
             if (!groupedData[dateKey]) groupedData[dateKey] = { date: format(i.date, 'MMM dd') };

@@ -1,6 +1,5 @@
 
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
 import { prisma } from '@/lib/prisma';
@@ -23,8 +22,10 @@ export async function POST(req: Request) {
         }
 
         // 1. Fetch Data (Context)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let insights: any[] = [];
         let entityName = '';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let adCreativeData: any = null; // For Ad creative analysis
 
         if (adId) {
@@ -190,10 +191,8 @@ export async function POST(req: Request) {
 
         // Build context section based on entity type
         let contextSection = '';
-        let entityType = 'Global Business Account';
 
         if (adId && adCreativeData) {
-            entityType = 'Ad Creative';
             const imageUrl = adCreativeData.thumbnail_url || (adCreativeData.creative_type !== 'VIDEO' ? adCreativeData.creative_url : null);
 
             contextSection = `
@@ -218,7 +217,6 @@ export async function POST(req: Request) {
       ${imageUrl ? `CREATIVE IMAGE: An image of this ad creative is attached. Please analyze the visual elements.` : 'No creative image available for visual analysis.'}
       `;
         } else if (adSetId) {
-            entityType = 'Ad Set';
             contextSection = `
       CONTEXT DATA (Period: ${from} to ${to}):
       - Analyzing Entity: ${entityName} (Ad Set)
@@ -327,11 +325,13 @@ export async function POST(req: Request) {
 
         // 5. Stream Chat
         // Sanitize messages
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sanitizedMessages = messages.map((m: any) => {
             let content = '';
             if (typeof m.content === 'string') {
                 content = m.content;
             } else if (Array.isArray(m.content)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 content = m.content.map((c: any) => c.text || JSON.stringify(c)).join('');
             } else {
                 content = JSON.stringify(m.content) || '';
@@ -356,6 +356,7 @@ export async function POST(req: Request) {
                     if (text.length > 50) {
                         try {
                             // Find the first user message for prompt
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const firstUserMessage = sanitizedMessages.find((m: any) => m.role === 'user');
                             // Build full conversation including this response
                             const fullConversation = [
@@ -408,8 +409,9 @@ export async function POST(req: Request) {
         });
 
         return result.toTextStreamResponse();
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('AI Analysis Error:', error);
-        return NextResponse.json({ error: error.message || 'Analysis failed.' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : 'Analysis failed.';
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }

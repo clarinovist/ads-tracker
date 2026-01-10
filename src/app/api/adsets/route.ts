@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const endDateStr = searchParams.get("endDate");
     const status = searchParams.get("status");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
     if (campaignId) where.campaign_id = campaignId;
     if (status) where.status = status;
