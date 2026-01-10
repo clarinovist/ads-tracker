@@ -22,14 +22,9 @@ export function SyncButton() {
         try {
             const url = mode === 'smart'
                 ? "/api/sync?mode=smart"
-                : mode === 'leads'
-                    ? "/api/sync/hourly"
-                    : "/api/sync";
+                : "/api/sync";
 
             const options: RequestInit = { method: "POST" };
-            if (mode === 'leads') { // 'leads' here refers to the 'Sync Hourly Stats' menu item
-                options.body = JSON.stringify({ days: 7 });
-            }
 
             const res = await fetch(url, options);
             const data = await res.json();
@@ -38,7 +33,7 @@ export function SyncButton() {
                 // If the API doesn't update the status itself (manual sync API might not),
                 // we could do it here, but usually the API should handle it.
                 // Let's check sync API again.
-                alert(`Sync (${mode === 'smart' ? '7 Days' : mode === 'leads' ? 'Hourly (7 Days)' : 'Today'}) completed successfully!`);
+                alert(`Sync (${mode === 'smart' ? '7 Days' : 'Today'}) completed successfully!`);
                 router.refresh();
             } else {
                 alert("Sync failed: " + (data.error || "Unknown error"));
@@ -77,10 +72,6 @@ export function SyncButton() {
                 <DropdownMenuItem onClick={() => handleSync('smart')} disabled={isSyncing}>
                     <History className="mr-2 h-4 w-4" />
                     <span>Smart Sync (7 Days)</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSync('leads')} disabled={isSyncing}>
-                    <Users className="mr-2 h-4 w-4" />
-                    <span>Sync Hourly Stats (Messaging)</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

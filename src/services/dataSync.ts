@@ -11,6 +11,15 @@ import {
 } from "@/lib/meta";
 import { startOfDay, format } from "date-fns";
 
+interface HourlyInsight {
+    spend: string;
+    impressions: string;
+    clicks: string;
+    actions?: Array<{ action_type: string; value: string }>;
+    date_start: string;
+    hourly_stats_aggregated_by_advertiser_time_zone: string;
+}
+
 export async function syncDailyInsights(targetDate?: Date) {
     console.log("🔄 Starting Daily Sync Service...");
 
@@ -74,6 +83,9 @@ export async function syncBusinessData(business: any, date: Date) {
 
     // 4. Sync Ads & Insights
     await syncAds(business.id, adAccountId, dateStr, token, normalizedDate);
+
+    // 5. Sync Hourly Insights (Messaging)
+    await syncHourlyInsights(business.id, adAccountId, dateStr, token);
 
     console.log(`✅ Synced ${business.name} successfully.`);
 }
@@ -224,6 +236,70 @@ async function syncAds(businessId: string, adAccountId: string, dateStr: string,
         const exists = await prisma.ad.count({ where: { id: insight.ad_id } });
         if (!exists) continue;
         await upsertAdInsight(insight.ad_id, insight, normalizedDate, breakdownStats[insight.ad_id]);
+    }
+}
+
+async function syncHourlyInsights(businessId: string, adAccountId: string, dateStr: string, token: string) {
+    console.log(`   Syncing Hourly Insights for ${dateStr}...`);
+
+    const range = JSON.stringify({ since: dateStr, until: dateStr });
+    const url = `https://graph.facebook.com/v19.0/${adAccountId}/insights?` +
+        `time_range=${range}&` +
+        `level=account&` +
+        `fields=spend,impressions,clicks,actions&` +
+        `breakdowns=hourly_stats_aggregated_by_advertiser_time_zone&` +
+        `access_token=${token}&limit=24`;
+
+    try {
+        const res = await fetch(url, { cache: 'no-store' });
+        const data = await res.json();
+
+        if (data.error) {
+            console.error(`   ❌ Error syncing hourly for ${dateStr}:`, data.error.message);
+            return;
+        }
+
+        const records: HourlyInsight[] = data.data || [];
+        if (records.length > 0) {
+            await prisma.$transaction(
+                records.map(record => {
+                    const hourStr = record.hourly_stats_aggregated_by_advertiser_time_zone.split(':')[0];
+                    const hour = parseInt(hourStr, 10);
+                    const spend = parseFloat(record.spend || '0');
+                    const impressions = parseInt(record.impressions || '0', 10);
+                    const clicks = parseInt(record.clicks || '0', 10);
+
+                    const messagingAction = record.actions?.find(a =>
+                        a.action_type === 'onsite_conversion.messaging_welcome_message_view'
+                    );
+                    const messagingConversations = parseInt(messagingAction?.value || '0', 10);
+
+                    return prisma.hourlyStat.upsert({
+                        where: {
+                            business_id_date_hour: {
+                                business_id: businessId,
+                                date: new Date(record.date_start),
+                                hour: hour
+                            }
+                        },
+                        create: {
+                            business_id: businessId,
+                            date: new Date(record.date_start),
+                            hour: hour,
+                            spend, impressions, clicks, messaging_conversations: messagingConversations
+                        },
+                        update: {
+                            spend, impressions, clicks, messaging_conversations: messagingConversations
+                        }
+                    });
+                })
+            );
+            console.log(`   ✅ Synced ${records.length} hourly records.`);
+        } else {
+            console.log(`   ℹ️ No hourly records found.`);
+        }
+    } catch (err: any) {
+        console.error(`   ❌ Failed to sync hourly stats:`, err.message);
     }
 }
 
