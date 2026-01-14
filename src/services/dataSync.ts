@@ -112,15 +112,26 @@ async function syncCampaigns(businessId: string, adAccountId: string, dateStr: s
     const breakdownStats = await fetchBreakdownStats(adAccountId, dateStr, token, 'campaign');
     console.log(`   Fetched ${insights.length} campaign insights`);
 
+    // Bulk check for existing campaigns to avoid N+1 queries
+    const campaignIds = insights
+        .map(i => i.campaign_id)
+        .filter((id): id is string => !!id);
+
+    const existingCampaigns = await prisma.campaign.findMany({
+        where: { id: { in: campaignIds } },
+        select: { id: true }
+    });
+
+    const existingCampaignIds = new Set(existingCampaigns.map(c => c.id));
+
     for (const insight of insights) {
         if (!insight.campaign_id) {
             console.log(`   ⚠️ Insight has no campaign_id, skipping.`);
             continue;
         }
 
-        // Verify campaign exists in DB
-        const exists = await prisma.campaign.count({ where: { id: insight.campaign_id } });
-        if (!exists) continue; // Skip insights for campaigns we couldn't fetch info for (e.g. archived long ago but showing metrics?)
+        // Verify campaign exists in DB using the pre-fetched Set
+        if (!existingCampaignIds.has(insight.campaign_id)) continue; // Skip insights for campaigns we couldn't fetch info for
 
         await upsertCampaignInsight(insight.campaign_id, insight, normalizedDate, breakdownStats[insight.campaign_id]);
     }
