@@ -100,13 +100,17 @@ async function syncCampaigns(businessId: string, adAccountId: string, dateStr: s
     const campaigns = await fetchCampaigns(adAccountId, token);
     console.log(`   Fetched ${campaigns.length} campaigns`);
 
-    for (const camp of campaigns) {
-        console.log(`     -> Syncing Campaign: ${camp.name} (${camp.id}) status: ${camp.effective_status || camp.status}`);
-        await prisma.campaign.upsert({
-            where: { id: camp.id },
-            update: { name: camp.name, objective: camp.objective, status: camp.effective_status || camp.status, business_id: businessId },
-            create: { id: camp.id, name: camp.name, objective: camp.objective, status: camp.effective_status || camp.status, business_id: businessId }
-        });
+    const CHUNK_SIZE = 20;
+    for (let i = 0; i < campaigns.length; i += CHUNK_SIZE) {
+        const chunk = campaigns.slice(i, i + CHUNK_SIZE);
+        await Promise.all(chunk.map(camp => {
+            console.log(`     -> Syncing Campaign: ${camp.name} (${camp.id}) status: ${camp.effective_status || camp.status}`);
+            return prisma.campaign.upsert({
+                where: { id: camp.id },
+                update: { name: camp.name, objective: camp.objective, status: camp.effective_status || camp.status, business_id: businessId },
+                create: { id: camp.id, name: camp.name, objective: camp.objective, status: camp.effective_status || camp.status, business_id: businessId }
+            });
+        }));
     }
 
     const insights = await fetchInsights(adAccountId, dateStr, token, 'campaign');
