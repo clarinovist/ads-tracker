@@ -43,15 +43,30 @@ export default async function DashboardPage({
         orderBy: { date: 'asc' },
     });
 
-    // 2. Fetch Campaigns with aggregated insights
-    const campaignsData = await prisma.campaign.findMany({
-        where: { business_id: { in: businesses.map((b) => b.id) } },
-        include: {
-            insights: {
-                where: { date: { gte: fromDate, lte: toDate } }
+    // 2. Fetch Campaigns with aggregated insights (Optimized)
+    const campaignStats = await prisma.campaignDailyInsight.groupBy({
+        by: ['campaign_id'],
+        where: {
+            date: { gte: fromDate, lte: toDate },
+            campaign: {
+                business_id: { in: businesses.map((b) => b.id) }
             }
+        },
+        _sum: {
+            spend: true,
+            impressions: true,
+            clicks: true,
+            leads: true
         }
     });
+
+    const campaignIds = campaignStats.map((s) => s.campaign_id);
+    const campaigns = await prisma.campaign.findMany({
+        where: { id: { in: campaignIds } },
+        select: { id: true, name: true, status: true }
+    });
+
+    const campaignMap = new Map(campaigns.map((c) => [c.id, c]));
 
     // 3. Fetch Ads with aggregated insights
     const adsData = await prisma.ad.findMany({
@@ -88,15 +103,17 @@ export default async function DashboardPage({
     const globalCPC = totalKpi.clicks > 0 ? (totalKpi.spend / totalKpi.clicks) : 0;
 
     // Process Campaign Rows
-    const campaignRows: CampaignRow[] = campaignsData.map((c) => {
-        const stats = c.insights.reduce((acc, curr) => ({
-            spend: acc.spend + curr.spend,
-            impressions: acc.impressions + curr.impressions,
-            clicks: acc.clicks + curr.clicks,
-            leads: acc.leads + curr.leads,
-        }), { spend: 0, impressions: 0, clicks: 0, leads: 0 });
-
-        return { id: c.id, name: c.name, status: c.status || 'UNKNOWN', ...stats };
+    const campaignRows: CampaignRow[] = campaignStats.map((stat) => {
+        const campaign = campaignMap.get(stat.campaign_id);
+        return {
+            id: stat.campaign_id,
+            name: campaign?.name || 'Unknown',
+            status: campaign?.status || 'UNKNOWN',
+            spend: stat._sum.spend || 0,
+            impressions: stat._sum.impressions || 0,
+            clicks: stat._sum.clicks || 0,
+            leads: stat._sum.leads || 0,
+        };
     }).filter((c) => c.spend > 0);
 
     // Process Ad Rows
