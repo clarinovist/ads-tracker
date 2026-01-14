@@ -31,16 +31,18 @@ export async function POST(request: Request) {
             const today = new Date();
             console.log(`Triggering Smart Sync (Last ${DAYS_TO_SYNC} days)...`);
 
-            for (let i = 0; i < DAYS_TO_SYNC; i++) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                try {
-                    console.log(`  Syncing: ${date.toISOString().split('T')[0]}`);
-                    await syncDailyInsights(date);
-                } catch (e) {
-                    console.error(`  Failed sync for ${date.toISOString()}`, e);
-                }
-            }
+            await Promise.all(
+                Array.from({ length: DAYS_TO_SYNC }, async (_, i) => {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    try {
+                        console.log(`  Syncing: ${date.toISOString().split('T')[0]}`);
+                        await syncDailyInsights(date);
+                    } catch (e) {
+                        console.error(`  Failed sync for ${date.toISOString()}`, e);
+                    }
+                })
+            );
             await updateSyncStatus('success');
             return NextResponse.json({ success: true, message: `Smart Sync completed (${DAYS_TO_SYNC} days)` });
 
