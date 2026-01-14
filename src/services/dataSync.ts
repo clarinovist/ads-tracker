@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import {
     fetchInsights,
     fetchCampaigns,
@@ -169,6 +170,8 @@ async function syncAds(businessId: string, adAccountId: string, dateStr: string,
         let creativeBody = null;
         let creativeTitle = null;
 
+        let creativeDynamicData: Prisma.InputJsonValue | null = null;
+
         if (ad.creative) {
             // Default to image_url or thumbnail_url for static content
             creativeUrl = ad.creative.image_url || ad.creative.thumbnail_url || null;
@@ -193,12 +196,12 @@ async function syncAds(businessId: string, adAccountId: string, dateStr: string,
 
             if (ad.creative.asset_feed_spec) {
                 // Store the full dynamic data
-                // We cast to Record<string, unknown> which is safer than any
-                (ad as unknown as Record<string, unknown>).creative_dynamic_data = ad.creative.asset_feed_spec;
+                creativeDynamicData = ad.creative.asset_feed_spec as unknown as Prisma.InputJsonValue;
             }
         }
 
-        const adData: Record<string, unknown> = {
+        const adCreateInput: Prisma.AdUncheckedCreateInput = {
+            id: ad.id,
             name: ad.name,
             status: ad.effective_status || ad.status,
             ad_set_id: ad.adset_id,
@@ -207,17 +210,17 @@ async function syncAds(businessId: string, adAccountId: string, dateStr: string,
             creative_type: creativeType,
             creative_body: creativeBody,
             creative_title: creativeTitle,
-            creative_dynamic_data: (ad as unknown as Record<string, unknown>).creative_dynamic_data || null
+            creative_dynamic_data: creativeDynamicData
         };
+
+        // Separate update input to avoid updating ID
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...adUpdateInput } = adCreateInput;
 
         await prisma.ad.upsert({
             where: { id: ad.id },
-            update: adData,
-            create: {
-                id: ad.id,
-                ...adData
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any // Prisma upsert types can be strict, any is acceptable here for rapid fix
+            update: adUpdateInput,
+            create: adCreateInput
         });
     }
 
