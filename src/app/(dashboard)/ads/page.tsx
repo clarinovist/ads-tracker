@@ -189,6 +189,22 @@ function AdsContent() {
                                         <h4 className="font-semibold text-slate-900 text-sm leading-tight text-balance group-hover:text-blue-600 transition-colors line-clamp-2">
                                             {ad.name}
                                         </h4>
+                                        {ad.ad_set?.campaign?.business && (
+                                            <span
+                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                                style={{
+                                                    backgroundColor: ad.ad_set.campaign.business.color_code ? `${ad.ad_set.campaign.business.color_code}15` : 'rgb(241 245 249)',
+                                                    color: ad.ad_set.campaign.business.color_code || 'rgb(71 85 105)'
+                                                }}
+                                                title={`Business: ${ad.ad_set.campaign.business.name}`}
+                                            >
+                                                <span
+                                                    className="w-1.5 h-1.5 rounded-full"
+                                                    style={{ backgroundColor: ad.ad_set.campaign.business.color_code || 'rgb(148 163 184)' }}
+                                                />
+                                                {ad.ad_set.campaign.business.name}
+                                            </span>
+                                        )}
                                         {(ad.creative_title || ad.creative_body) && (
                                             <div className="text-xs text-slate-500 space-y-0.5 pt-1">
                                                 {ad.creative_title && (

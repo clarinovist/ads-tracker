@@ -33,6 +33,8 @@ export interface CampaignRow {
     impressions: number;
     clicks: number;
     leads: number;
+    businessName?: string;
+    businessColor?: string;
 }
 
 interface CampaignsTableProps {
@@ -255,14 +257,40 @@ export default function CampaignsTable({ campaigns, maxSpend }: CampaignsTablePr
                             <TableRow key={row.id} className="group hover:bg-slate-50/50">
                                 <TableCell>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                                            <TrendingUp className="h-4 w-4 text-indigo-600" />
+                                        <div
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                            style={{
+                                                backgroundColor: row.businessColor ? `${row.businessColor}20` : 'rgb(238 242 255)',
+                                            }}
+                                        >
+                                            <TrendingUp
+                                                className="h-4 w-4"
+                                                style={{ color: row.businessColor || 'rgb(79 70 229)' }}
+                                            />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="font-medium text-slate-900 truncate max-w-[180px]" title={row.name}>
                                                 {row.name}
                                             </p>
-                                            <StatusBadge status={row.status} />
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <StatusBadge status={row.status} />
+                                                {row.businessName && (
+                                                    <span
+                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                                        style={{
+                                                            backgroundColor: row.businessColor ? `${row.businessColor}15` : 'rgb(241 245 249)',
+                                                            color: row.businessColor || 'rgb(71 85 105)'
+                                                        }}
+                                                        title={`Business: ${row.businessName}`}
+                                                    >
+                                                        <span
+                                                            className="w-1.5 h-1.5 rounded-full"
+                                                            style={{ backgroundColor: row.businessColor || 'rgb(148 163 184)' }}
+                                                        />
+                                                        {row.businessName}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </TableCell>

@@ -8,8 +8,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-ads_tracker}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Port NOT exposed to public - only accessible via Docker network
-    # If you need local access, use: "127.0.0.1:5432:5432"
+    ports:
+      - "127.0.0.1:5433:5432"
     networks:
       - ads-tracker-network
     restart: always

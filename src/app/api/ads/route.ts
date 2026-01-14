@@ -31,7 +31,7 @@ export async function GET(request: Request) {
             where,
             include: {
                 ad_set: {
-                    select: { name: true, campaign: { select: { name: true } } }
+                    select: { name: true, campaign: { select: { name: true, business: { select: { name: true, color_code: true } } } } }
                 },
                 insights: {
                     where: {

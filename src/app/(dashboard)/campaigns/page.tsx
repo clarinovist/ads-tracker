@@ -64,6 +64,8 @@ function CampaignsContent() {
         impressions: c.aggregate.impressions,
         clicks: c.aggregate.clicks || 0,
         leads: c.aggregate.leads,
+        businessName: c.business?.name,
+        businessColor: c.business?.color_code,
     }));
 
     return (

@@ -248,8 +248,26 @@ function AdSetsContent() {
                                     return (
                                         <tr key={adset.id} className="hover:bg-slate-50/50 transition-colors group">
                                             <td className="px-3 py-3">
-                                                <div className="truncate text-slate-900 font-semibold w-full" title={adset.name}>
-                                                    {adset.name}
+                                                <div className="w-full">
+                                                    <div className="truncate text-slate-900 font-semibold" title={adset.name}>
+                                                        {adset.name}
+                                                    </div>
+                                                    {adset.campaign?.business && (
+                                                        <span
+                                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium mt-0.5"
+                                                            style={{
+                                                                backgroundColor: adset.campaign.business.color_code ? `${adset.campaign.business.color_code}15` : 'rgb(241 245 249)',
+                                                                color: adset.campaign.business.color_code || 'rgb(71 85 105)'
+                                                            }}
+                                                            title={`Business: ${adset.campaign.business.name}`}
+                                                        >
+                                                            <span
+                                                                className="w-1.5 h-1.5 rounded-full"
+                                                                style={{ backgroundColor: adset.campaign.business.color_code || 'rgb(148 163 184)' }}
+                                                            />
+                                                            {adset.campaign.business.name}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-3 py-3">

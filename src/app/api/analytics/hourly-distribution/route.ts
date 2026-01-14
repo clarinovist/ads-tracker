@@ -19,7 +19,8 @@ export async function GET(req: Request) {
         const startDate = startOfDay(new Date(from));
         const endDate = endOfDay(new Date(to));
 
-        const stats = await prisma.hourlyStat.findMany({
+        const stats = await prisma.hourlyStat.groupBy({
+            by: ['hour'],
             where: {
                 date: {
                     gte: startDate,
@@ -27,26 +28,25 @@ export async function GET(req: Request) {
                 },
                 ...(businessId ? { business_id: businessId } : {})
             },
-            select: {
-                hour: true,
+            _sum: {
                 messaging_conversations: true
+            },
+            orderBy: {
+                hour: 'asc'
             }
         });
 
         // Aggregate by hour
-        const hourlyDistribution = Array(24).fill(0).map((_, i) => ({
-            hour: i,
-            count: 0,
-            label: `${i.toString().padStart(2, '0')}:00`
-        }));
-
-        stats.forEach(stat => {
-            if (hourlyDistribution[stat.hour]) {
-                hourlyDistribution[stat.hour].count += stat.messaging_conversations;
-            }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const hourlyDistribution = Array(24).fill(0).map((_, i) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const stat = (stats as any[]).find((s: any) => s.hour === i);
+            return {
+                hour: i,
+                count: stat?._sum.messaging_conversations || 0,
+                label: `${i.toString().padStart(2, '0')}:00`
+            };
         });
-
-        return NextResponse.json(hourlyDistribution);
 
         return NextResponse.json(hourlyDistribution);
 
