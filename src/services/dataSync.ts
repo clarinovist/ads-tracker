@@ -153,72 +153,82 @@ async function syncAdSets(businessId: string, adAccountId: string, dateStr: stri
     }
 }
 
-async function syncAds(businessId: string, adAccountId: string, dateStr: string, token: string, normalizedDate: Date) {
+export async function syncAds(businessId: string, adAccountId: string, dateStr: string, token: string, normalizedDate: Date) {
     const ads = await fetchAds(adAccountId, token);
     console.log(`   Fetched ${ads.length} ads`);
 
-    for (const ad of ads) {
-        const adSetExists = await prisma.adSet.count({ where: { id: ad.adset_id } });
-        if (!adSetExists) continue;
+    const adSetIds = new Set(ads.map(ad => ad.adset_id).filter(Boolean));
+    const existingAdSets = await prisma.adSet.findMany({
+        where: { id: { in: Array.from(adSetIds) } },
+        select: { id: true }
+    });
+    const existingAdSetIds = new Set(existingAdSets.map(as => as.id));
 
-        // Extract creative data
-        let creativeUrl = null;
-        let thumbnailUrl = null;
-        let creativeType = ad.creative?.object_type || null;
+    const validAds = ads.filter(ad => existingAdSetIds.has(ad.adset_id));
 
-        let creativeBody = null;
-        let creativeTitle = null;
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < validAds.length; i += BATCH_SIZE) {
+        const batch = validAds.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(async (ad) => {
+            // Extract creative data
+            let creativeUrl = null;
+            let thumbnailUrl = null;
+            let creativeType = ad.creative?.object_type || null;
 
-        if (ad.creative) {
-            // Default to image_url or thumbnail_url for static content
-            creativeUrl = ad.creative.image_url || ad.creative.thumbnail_url || null;
+            let creativeBody = null;
+            let creativeTitle = null;
 
-            if (ad.creative.video_id) {
-                creativeType = 'VIDEO';
-                thumbnailUrl = ad.creative.thumbnail_url || null;
-                creativeUrl = `https://www.facebook.com/video.php?v=${ad.creative.video_id}`;
+            if (ad.creative) {
+                // Default to image_url or thumbnail_url for static content
+                creativeUrl = ad.creative.image_url || ad.creative.thumbnail_url || null;
+
+                if (ad.creative.video_id) {
+                    creativeType = 'VIDEO';
+                    thumbnailUrl = ad.creative.thumbnail_url || null;
+                    creativeUrl = `https://www.facebook.com/video.php?v=${ad.creative.video_id}`;
+                }
+
+                // Extract Body (Caption)
+                creativeBody = ad.creative.body ||
+                    ad.creative.object_story_spec?.link_data?.message ||
+                    ad.creative.object_story_spec?.video_data?.message ||
+                    ad.creative.asset_feed_spec?.bodies?.[0]?.text || null;
+
+                // Extract Title (Headline)
+                creativeTitle = ad.creative.title ||
+                    ad.creative.object_story_spec?.link_data?.name ||
+                    ad.creative.object_story_spec?.video_data?.title ||
+                    ad.creative.asset_feed_spec?.titles?.[0]?.text || null;
+
+                if (ad.creative.asset_feed_spec) {
+                    // Store the full dynamic data
+                    // We cast to Record<string, unknown> which is safer than any
+                    (ad as unknown as Record<string, unknown>).creative_dynamic_data = ad.creative.asset_feed_spec;
+                }
             }
 
-            // Extract Body (Caption)
-            creativeBody = ad.creative.body ||
-                ad.creative.object_story_spec?.link_data?.message ||
-                ad.creative.object_story_spec?.video_data?.message ||
-                ad.creative.asset_feed_spec?.bodies?.[0]?.text || null;
+            const adData: Record<string, unknown> = {
+                name: ad.name,
+                status: ad.effective_status || ad.status,
+                ad_set_id: ad.adset_id,
+                creative_url: creativeUrl,
+                thumbnail_url: thumbnailUrl,
+                creative_type: creativeType,
+                creative_body: creativeBody,
+                creative_title: creativeTitle,
+                creative_dynamic_data: (ad as unknown as Record<string, unknown>).creative_dynamic_data || null
+            };
 
-            // Extract Title (Headline)
-            creativeTitle = ad.creative.title ||
-                ad.creative.object_story_spec?.link_data?.name ||
-                ad.creative.object_story_spec?.video_data?.title ||
-                ad.creative.asset_feed_spec?.titles?.[0]?.text || null;
-
-            if (ad.creative.asset_feed_spec) {
-                // Store the full dynamic data
-                // We cast to Record<string, unknown> which is safer than any
-                (ad as unknown as Record<string, unknown>).creative_dynamic_data = ad.creative.asset_feed_spec;
-            }
-        }
-
-        const adData: Record<string, unknown> = {
-            name: ad.name,
-            status: ad.effective_status || ad.status,
-            ad_set_id: ad.adset_id,
-            creative_url: creativeUrl,
-            thumbnail_url: thumbnailUrl,
-            creative_type: creativeType,
-            creative_body: creativeBody,
-            creative_title: creativeTitle,
-            creative_dynamic_data: (ad as unknown as Record<string, unknown>).creative_dynamic_data || null
-        };
-
-        await prisma.ad.upsert({
-            where: { id: ad.id },
-            update: adData,
-            create: {
-                id: ad.id,
-                ...adData
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any // Prisma upsert types can be strict, any is acceptable here for rapid fix
-        });
+            await prisma.ad.upsert({
+                where: { id: ad.id },
+                update: adData,
+                create: {
+                    id: ad.id,
+                    ...adData
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as any // Prisma upsert types can be strict, any is acceptable here for rapid fix
+            });
+        }));
     }
 
     const insights = await fetchInsights(adAccountId, dateStr, token, 'ad');
