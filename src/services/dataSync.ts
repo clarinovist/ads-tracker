@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import pLimit from "p-limit";
 import {
     fetchInsights,
     fetchCampaigns,
@@ -36,13 +37,18 @@ export async function syncDailyInsights(targetDate?: Date) {
 
         console.log(`📅 Syncing data for: ${dateStr}`);
 
-        for (const business of businesses) {
-            try {
-                await syncBusinessData(business, normalizedDate);
-            } catch (err) {
-                console.error(`❌ Failed to sync business ${business.name}:`, err);
-            }
-        }
+        const limit = pLimit(5); // Process up to 5 businesses concurrently to avoid rate limits
+        const syncPromises = businesses.map(business =>
+            limit(async () => {
+                try {
+                    await syncBusinessData(business, normalizedDate);
+                } catch (err) {
+                    console.error(`❌ Failed to sync business ${business.name}:`, err);
+                }
+            })
+        );
+
+        await Promise.all(syncPromises);
 
         console.log("🎉 Daily Sync Completed.");
 
