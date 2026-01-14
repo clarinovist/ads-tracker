@@ -145,10 +145,22 @@ async function syncAdSets(businessId: string, adAccountId: string, dateStr: stri
 
     const insights = await fetchInsights(adAccountId, dateStr, token, 'adset');
     const breakdownStats = await fetchBreakdownStats(adAccountId, dateStr, token, 'adset');
+
+    // Optimization: Batch fetch existing ad set IDs to avoid N+1 queries
+    const adSetIds = insights
+        .map(i => i.adset_id)
+        .filter((id): id is string => !!id);
+
+    const existingAdSets = await prisma.adSet.findMany({
+        where: { id: { in: adSetIds } },
+        select: { id: true }
+    });
+
+    const existingAdSetIds = new Set(existingAdSets.map(a => a.id));
+
     for (const insight of insights) {
         if (!insight.adset_id) continue;
-        const exists = await prisma.adSet.count({ where: { id: insight.adset_id } });
-        if (!exists) continue;
+        if (!existingAdSetIds.has(insight.adset_id)) continue;
         await upsertAdSetInsight(insight.adset_id, insight, normalizedDate, breakdownStats[insight.adset_id]);
     }
 }
