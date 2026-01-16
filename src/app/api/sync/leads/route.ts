@@ -51,23 +51,34 @@ export async function POST(req: Request) {
                                 // 4. Upsert Leads to DB
                                 // We use transaction or Promise.all for speed
                                 await prisma.$transaction(
-                                    leads.map(lead =>
-                                        prisma.lead.upsert({
+                                    leads.map(lead => {
+                                        const email = extractFieldValue(lead.field_data, ['email']);
+                                        const fullName = extractFieldValue(lead.field_data, ['full_name', 'first_name', 'last_name', 'name']);
+                                        const phone = extractFieldValue(lead.field_data, ['phone_number', 'phone', 'mobile']);
+
+                                        return prisma.lead.upsert({
                                             where: { id: lead.id },
                                             create: {
                                                 id: lead.id,
                                                 created_time: new Date(lead.created_time),
                                                 ad_id: lead.ad_id,
                                                 ad_name: lead.ad_name,
-                                                business_id: business.id
+                                                business_id: business.id,
+                                                email,
+                                                full_name: fullName,
+                                                phone_number: phone,
+                                                raw_data: lead.field_data as any // Cast for Prisma Json compatibility
                                             },
                                             update: {
-                                                // Update fields if they might change (usually they don't, maybe ad name)
                                                 ad_name: lead.ad_name,
-                                                created_time: new Date(lead.created_time)
+                                                created_time: new Date(lead.created_time),
+                                                email,
+                                                full_name: fullName,
+                                                phone_number: phone,
+                                                raw_data: lead.field_data as any
                                             }
-                                        })
-                                    )
+                                        });
+                                    })
                                 );
                                 businessLeadsCount += leads.length;
                             }
@@ -107,4 +118,25 @@ function chunkArray<T>(array: T[], size: number): T[][] {
         chunked.push(array.slice(i, i + size));
     }
     return chunked;
+}
+
+/**
+ * Helper to extract specific field values from Meta's lead field_data array
+ */
+function extractFieldValue(fieldData: Array<{ name: string; values: string[] }>, keys: string[]): string | null {
+    if (!fieldData || !Array.isArray(fieldData)) return null;
+
+    // Direct match first (case-insensitive)
+    for (const key of keys) {
+        const found = fieldData.find(f => f.name.toLowerCase() === key.toLowerCase());
+        if (found && found.values && found.values[0]) return found.values[0];
+    }
+
+    // Partial match if no direct match
+    for (const key of keys) {
+        const found = fieldData.find(f => f.name.toLowerCase().includes(key.toLowerCase()));
+        if (found && found.values && found.values[0]) return found.values[0];
+    }
+
+    return null;
 }

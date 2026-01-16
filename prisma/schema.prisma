@@ -227,6 +227,14 @@ enum UserRole {
   VIEWER
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  JUNK
+}
+
 model AnalysisHistory {
   id         String   @id @default(uuid())
   prompt     String?  
@@ -242,12 +250,18 @@ model AnalysisHistory {
 }
 
 model Lead {
-  id           String   @id // Meta Lead ID
+  id           String     @id // Meta Lead ID
   created_time DateTime
   ad_id        String?
   ad_name      String?
   business_id  String
-  business     Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  status       LeadStatus @default(NEW)
+  value        Float      @default(0)
+  full_name    String?
+  email        String?
+  phone_number String?
+  raw_data     Json?      // This is crucial: store the raw field_data array from FB here
+  business     Business   @relation(fields: [business_id], references: [id], onDelete: Cascade)
 
   @@index([business_id])
   @@index([created_time])

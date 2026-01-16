@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Pencil } from "lucide-react";
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { BUSINESS_COLORS } from '@/lib/colors';
 import { Textarea } from "@/components/ui/textarea";
 
@@ -278,7 +279,14 @@ export default function BusinessList({ initialData }: { initialData: Business[] 
                             ) : (
                                 initialData.map((b) => (
                                     <TableRow key={b.id}>
-                                        <TableCell className="font-medium whitespace-nowrap">{b.name}</TableCell>
+                                        <TableCell className="font-medium whitespace-nowrap">
+                                            <Link
+                                                href={`/businesses/${b.id}/analytics`}
+                                                className="hover:text-indigo-600 hover:underline decoration-indigo-600/30 underline-offset-4 transition-all"
+                                            >
+                                                {b.name}
+                                            </Link>
+                                        </TableCell>
                                         <TableCell className="font-mono text-xs whitespace-nowrap">{b.ad_account_id}</TableCell>
                                         <TableCell className="whitespace-nowrap">
                                             <div className="flex items-center gap-2">

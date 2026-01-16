@@ -143,7 +143,7 @@ export interface MetaLead {
 }
 
 export async function fetchLeads(adId: string, accessToken: string): Promise<MetaLead[]> {
-    const url = `https://graph.facebook.com/v19.0/${adId}/leads?fields=id,created_time,ad_id,ad_name,adset_name,campaign_name&access_token=${accessToken}&limit=500`;
+    const url = `https://graph.facebook.com/v19.0/${adId}/leads?fields=id,created_time,ad_id,ad_name,adset_name,campaign_name,field_data&access_token=${accessToken}&limit=500`;
     return await fetchMetaList<MetaLead>(url);
 }
 

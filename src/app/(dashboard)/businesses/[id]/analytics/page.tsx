@@ -146,7 +146,15 @@ export default async function BusinessAnalyticsPage({
             {/* KPI Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricsCard title="Total Spend" value={formatCurrency(totalKpi.spend)} icon={DollarSign} />
-                <MetricsCard title="Leads" value={totalKpi.leads} icon={Users} iconColor="text-purple-500" />
+                <Link href={`/businesses/${id}/leads`} className="block">
+                    <MetricsCard
+                        title="Leads"
+                        value={totalKpi.leads}
+                        icon={Users}
+                        iconColor="text-purple-500"
+                        className="cursor-pointer hover:ring-2 hover:ring-purple-500/20 transition-all"
+                    />
+                </Link>
                 <MetricsCard title="CPM" value={formatCurrency(cpm)} icon={BarChart3} iconColor="text-orange-500" description="Cost per 1,000 impr" />
                 <MetricsCard title="CTR" value={`${ctr.toFixed(2)}%`} icon={MousePointer2} iconColor="text-blue-500" />
             </div>
