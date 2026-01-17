@@ -99,13 +99,15 @@ export async function syncBusinessData(business: { id: string; name: string; ad_
 }
 
 async function syncAccountInsights(businessId: string, adAccountId: string, dateStr: string, token: string, normalizedDate: Date) {
-    // Fetch insights AND breakdown stats in one call
-    const insights = await fetchInsights(adAccountId, dateStr, token, 'account', undefined, 'action_destination');
+    // 1. Fetch Totals (Accuracy)
+    const insights = await fetchInsights(adAccountId, dateStr, token, 'account');
+
+    // 2. Fetch Breakdowns (Messaging details)
+    const breakdownInsights = await fetchInsights(adAccountId, dateStr, token, 'account', undefined, 'action_destination');
+    const breakdownStats = calculateBreakdownStats(breakdownInsights, 'account');
 
     if (insights.length > 0) {
-        const insight = insights[0];
-        const breakdownStats = calculateBreakdownStats([insight], 'account');
-        await upsertDailyInsight(businessId, insight, normalizedDate, breakdownStats['account']);
+        await upsertDailyInsight(businessId, insights[0], normalizedDate, breakdownStats['account']);
     }
 }
 
@@ -117,7 +119,6 @@ async function syncCampaigns(businessId: string, adAccountId: string, dateStr: s
     for (let i = 0; i < campaigns.length; i += CHUNK_SIZE) {
         const chunk = campaigns.slice(i, i + CHUNK_SIZE);
         await Promise.all(chunk.map(camp => {
-            // console.log(`     -> Syncing Campaign: ${camp.name} (${camp.id}) status: ${camp.effective_status || camp.status}`);
             return campaignRepo.upsert({
                 id: camp.id,
                 name: camp.name,
@@ -128,9 +129,13 @@ async function syncCampaigns(businessId: string, adAccountId: string, dateStr: s
         }));
     }
 
-    // Fetch insights AND breakdown stats in one call
-    const insights = await fetchInsights(adAccountId, dateStr, token, 'campaign', undefined, 'action_destination');
-    const breakdownStats = calculateBreakdownStats(insights, 'campaign');
+    // 1. Fetch Totals
+    const insights = await fetchInsights(adAccountId, dateStr, token, 'campaign');
+
+    // 2. Fetch Breakdowns
+    const breakdownInsights = await fetchInsights(adAccountId, dateStr, token, 'campaign', undefined, 'action_destination');
+    const breakdownStats = calculateBreakdownStats(breakdownInsights, 'campaign');
+
     console.log(`   Fetched ${insights.length} campaign insights`);
 
     // Bulk check for existing campaigns to avoid N+1 queries
@@ -172,8 +177,12 @@ async function syncAdSets(businessId: string, adAccountId: string, dateStr: stri
         })
     ));
 
-    const insights = await fetchInsights(adAccountId, dateStr, token, 'adset', undefined, 'action_destination');
-    const breakdownStats = calculateBreakdownStats(insights, 'adset');
+    // 1. Fetch Totals
+    const insights = await fetchInsights(adAccountId, dateStr, token, 'adset');
+
+    // 2. Fetch Breakdowns
+    const breakdownInsights = await fetchInsights(adAccountId, dateStr, token, 'adset', undefined, 'action_destination');
+    const breakdownStats = calculateBreakdownStats(breakdownInsights, 'adset');
 
     // Optimization: Batch fetch existing ad set IDs to avoid N+1 queries
     const adSetIds = insights
@@ -260,8 +269,12 @@ async function syncAds(businessId: string, adAccountId: string, dateStr: string,
         }));
     }
 
-    const insights = await fetchInsights(adAccountId, dateStr, token, 'ad', undefined, 'action_destination');
-    const breakdownStats = calculateBreakdownStats(insights, 'ad');
+    // 1. Fetch Totals
+    const insights = await fetchInsights(adAccountId, dateStr, token, 'ad');
+
+    // 2. Fetch Breakdowns
+    const breakdownInsights = await fetchInsights(adAccountId, dateStr, token, 'ad', undefined, 'action_destination');
+    const breakdownStats = calculateBreakdownStats(breakdownInsights, 'ad');
 
     const adIds = insights.map(i => i.ad_id).filter((id): id is string => !!id);
     const uniqueAdIds = Array.from(new Set(adIds));
