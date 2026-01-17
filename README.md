@@ -79,6 +79,14 @@ If you prefer to run without Docker:
 5. **Run migrations**: `npx prisma migrate dev`
 6. **Start app**: `npm run dev`
 
+### Verification
+
+To verify that the application builds correctly:
+
+```bash
+npm run build
+```
+
 ### Usage
 
 1. **Add a Business**
