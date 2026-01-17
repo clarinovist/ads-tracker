@@ -42,7 +42,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **Per-Business Access Tokens**: Each business can now have its own Meta API access token
   - Added `access_token` field to Business model
-  - Businesses without custom token fall back to global `META_ACCESS_TOKEN`
+  - (Later removed) Businesses without a custom token previously could fall back to a global `META_ACCESS_TOKEN`\*
   - Useful for multi-client agencies or restricted permissions
   
 - **Edit Business Functionality**: 
@@ -86,11 +86,13 @@ All notable changes to this project will be documented in this file.
 - Updated database schema with `access_token` column
 - Enhanced `BusinessList` component with edit dialog and color picker
 
+\*Catatan: fallback global token dihapus di versi 2.1.0.
+
 ## [1.0.0] - 2026-01-02
 
 ### Initial Release
 - Multi-business Meta Ads monitoring
-- Daily automated sync at 01:00 AM
+- Automated sync (schedule configurable)
 - Analytics dashboard with charts
 - Date range filtering
 - PostgreSQL data persistence
@@ -105,15 +107,13 @@ All notable changes to this project will be documented in this file.
 ### From 1.0.0 to 2.0.0
 
 **Database Migration:**
-The `access_token` column is automatically added when you rebuild. No manual migration needed.
+Database changes are applied via Prisma migrations. In Docker deployment, migrations are applied automatically on startup using `npx prisma migrate deploy`.
 
 **Existing Businesses:**
-All existing businesses will continue to work using the global `META_ACCESS_TOKEN`. You can optionally edit them to add custom tokens.
+Global `META_ACCESS_TOKEN` is no longer used. Each business must have its own token stored in the `Business.access_token` field.
 
-**No Breaking Changes:**
-- All existing features work as before
-- API endpoints are backward compatible
-- Global token still works as default
+**Breaking Notes:**
+- If a business has no token, sync will fail (token is required per business)
 
 **New Capabilities:**
 1. Add custom tokens to businesses that need them

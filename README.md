@@ -5,7 +5,7 @@ A modular, industrial-standard web application for monitoring Meta Ads across mu
 ## Features
 - **Dynamic Multi-Tenancy**: Support for multiple businesses with distinct ad accounts
 - **Per-Business Access Tokens**: Each business can use its own Meta API token
-- **Daily Automated Sync**: Fetches data from Meta Graph API every day at 01:00 AM
+- **Automated Sync**: Runs every 6 hours by default (can be disabled)
 - **Automatic Historical Backfill**: New businesses automatically get 30 days of historical data
 - **Data Persistence**: Stores historical data in local PostgreSQL for fast access
 - **Analytics Dashboard**: View Spend, Leads, Impressions, CPM, CPC, and customized metrics (Hook Rate, Hold Rate)
@@ -27,14 +27,14 @@ A modular, industrial-standard web application for monitoring Meta Ads across mu
 
 ### Prerequisites
 - **Docker & Docker Compose** (Recommended for easiest setup)
-- **Node.js 20+** (only if running locally without Docker)
+- **Node.js 20.19+** (only if running locally without Docker; required by Prisma v7)
 
 ### Quick Start with Docker (Recommended)
 
 **This is the easiest way to run the application!** Just run:
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 The app will be available at [http://localhost:3000](http://localhost:3000).
@@ -47,14 +47,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Production Deployment
 
-For production deployment with a custom domain (e.g., ads.nugrohopramono.my.id):
-
-1. **Quick Deployment**: Use the automated deployment script:
-   ```bash
-   ./deploy.sh
-   ```
-
-2. **Manual Deployment**: See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions including:
+For production deployment with a custom domain (e.g., ads.nugrohopramono.my.id), see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions including:
    - SSL/TLS certificate setup with Let's Encrypt
    - Nginx reverse proxy configuration
    - Environment variable configuration
@@ -72,12 +65,11 @@ The production setup includes:
 
 If you prefer to run without Docker:
 
-1. **Start PostgreSQL**: `docker-compose up -d postgres` (or use your own PostgreSQL)
+1. **Start PostgreSQL**: `docker compose up -d postgres` (or use your own PostgreSQL)
 2. **Install dependencies**: `npm install`
-3. **Install Prisma PostgreSQL adapter**: `npm install @prisma/adapter-pg`
-4. **Generate Prisma Client**: `npx prisma generate`
-5. **Run migrations**: `npx prisma migrate dev`
-6. **Start app**: `npm run dev`
+3. **Generate Prisma Client**: `npx prisma generate`
+4. **Run migrations**: `npx prisma migrate dev`
+5. **Start app**: `npm run dev`
 
 ### Verification
 
@@ -113,7 +105,7 @@ npm run build
 4. **Manual Data Sync**
    
    **Via UI**:
-   - Locat the **"Sync Now"** button at the bottom of the sidebar.
+   - Locate the **"Sync Now"** button at the bottom of the sidebar.
    - Click it to fetch the latest data for all active businesses immediately.
    
    **Via API (CLI)**:
@@ -132,46 +124,9 @@ npm run build
    curl -X POST http://localhost:3000/api/businesses/{business-id}/backfill -H "Content-Type: application/json" -d '{"days": 30}'
    ```
 
-1.  **Add a Business**
-    - Go to `/businesses`
-    - Click "Add Business"
-    - Enter Name, Ad Account ID (e.g., `act_12345678`)
-    - Choose a color from the 8 presets
-    - **Provide a custom Meta access token for this business**
-    - **Data is automatically fetched!** The system will backfill the last 30 days in the background
-    - Refresh the dashboard in ~10-20 seconds to see your data
-
-2.  **Edit a Business**
-    - Go to `/businesses`
-    - Click the edit icon (✏️) next to any business
-    - Update Name, Color, or Access Token
-    - Note: Ad Account ID cannot be changed
-
-3.  **View Data**
-    - Data automatically appears on the dashboard at `/`
-    - Use date range picker to view different time periods
-    - Charts show Spend, Leads, Impressions, and other metrics
-
-4.  **Manual Data Sync** (Optional)
-
-    **Sync all businesses (yesterday's data)**:
-    ```bash
-    curl -X POST http://localhost:3000/api/sync
-    ```
-
-    **Backfill all businesses (last 30 days)**:
-    ```bash
-    curl -X POST http://localhost:3000/api/backfill -H "Content-Type: application/json" -d '{"days": 30}'
-    ```
-
-    **Backfill specific business**:
-    ```bash
-    curl -X POST http://localhost:3000/api/businesses/{business-id}/backfill -H "Content-Type: application/json" -d '{"days": 30}'
-    ```
-
-5.  **Automatic Sync**
-    - Runs daily at 01:00 AM automatically
-    - Fetches previous day's data for all active businesses
+5. **Automatic Sync**
+   - Runs every 6 hours by default (`0 */6 * * *`)
+   - Can be disabled via the `SystemSettings` key `auto_sync_enabled`
 
 ## Project Structure
 - `/src/app`: Next.js App Router pages and API routes
@@ -221,7 +176,7 @@ All lead types are aggregated to provide accurate CPL (Cost Per Lead) calculatio
 
 - **No data after adding business**:
   - Wait 10-20 seconds for background backfill to complete
-  - Check logs: `docker-compose logs web --tail=50`
+   - Check logs: `docker compose logs web --tail=50`
   - If you see permission errors, see below
 
 - **Permission Error** (`#200 Ad account owner has NOT grant ads_management or ads_read permission`):
@@ -234,10 +189,10 @@ All lead types are aggregated to provide accurate CPL (Cost Per Lead) calculatio
 
 - **Sync Fails**: 
   - Check the business's access token validity
-  - Check logs: `docker-compose logs web`
+   - Check logs: `docker compose logs web`
   
 - **Database Connection**: 
-  - Ensure `postgres` container is healthy: `docker-compose ps postgres`
+   - Ensure `postgres` container is healthy: `docker compose ps postgres`
 
 - **Duplicate Records**:
   - Should not happen with current version (uses `startOfDay()` normalization)
@@ -257,9 +212,13 @@ If you encounter `PrismaClientInitializationError`:
 
 ### Environment Variables
 
-Required environment variables:
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ads_tracker?schema=public"
+Common `DATABASE_URL` values:
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/ads_tracker?schema=public"
+# If you are running PostgreSQL via the provided Docker Compose file, the database is exposed to the host on port 5433:
+```
+
+# If you are connecting from the web container to the postgres service (Docker-to-Docker):
+DATABASE_URL="postgresql://postgres:postgres@postgres:5432/ads_tracker?schema=public"
 ```
 
 **Note**: `META_ACCESS_TOKEN` has been removed. You must provide a token for each business via the UI.

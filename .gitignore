@@ -43,3 +43,6 @@ next-env.d.ts
 
 /src/generated/prisma
 *.sql
+
+# Track Prisma migrations (SQL) even though we ignore generic .sql files
+!prisma/migrations/**/migration.sql

@@ -4,7 +4,7 @@ Dokumen ini menjelaskan langkah-langkah untuk menjalankan project Ads Tracker, b
 
 ## Prasyarat
 - **Docker & Docker Compose** (Wajib untuk database atau menjalankan full container)
-- **Node.js 20+** (Hanya jika ingin menjalankan aplikasi langsung di mesin host)
+- **Node.js 20.19+** (Hanya jika ingin menjalankan aplikasi langsung di mesin host; required oleh Prisma v7)
 - **Git**
 
 ---
@@ -28,7 +28,7 @@ Ini adalah metode yang Anda gunakan sekarang: menjalankan database via Docker da
    ```
    Buka file `.env` dan pastikan `DATABASE_URL` mengarah ke localhost:
    ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ads_tracker?schema=public"
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/ads_tracker?schema=public"
    ```
 
 3. **Jalankan Database**:
@@ -43,7 +43,7 @@ Ini adalah metode yang Anda gunakan sekarang: menjalankan database via Docker da
    ```
 
 5. **Setup Database (Prisma)**:
-   Generate client, jalankan migrasi, dan masukkan data awal (seeding):
+   Generate client dan jalankan migrasi:
    ```bash
    npx prisma generate
    npx prisma migrate dev
@@ -79,6 +79,8 @@ Untuk produksi, sangat direkomendasikan menggunakan Docker Compose sepenuhnya de
    docker compose up -d --build
    ```
 
+   Catatan: container `web` menjalankan `npx prisma migrate deploy` saat startup (lihat `docker-entrypoint.sh`), jadi migrasi DB akan diaplikasikan otomatis sebelum app mulai.
+
 4. **Verifikasi**:
    Cek status container:
    ```bash
@@ -97,15 +99,15 @@ Untuk produksi, sangat direkomendasikan menggunakan Docker Compose sepenuhnya de
 | `DATABASE_URL` | URL koneksi ke PostgreSQL | `postgresql://user:pass@host:port/db` |
 | `NODE_ENV` | Mode aplikasi (`development` atau `production`) | `production` |
 
-### Database Seeding
-Jika Anda perlu memasukkan data awal secara manual:
-```bash
-# Lokal
-npx prisma db seed
+### Bootstrap Admin User
+Saat startup container `web`, sistem akan memastikan admin user ada (idempotent) via `migrate.js`.
 
-# Docker (Produksi)
-docker exec -it ads-tracker-web npx prisma db seed
-```
+Untuk mengatur kredensial admin:
+- Set `ADMIN_EMAIL` dan `ADMIN_PASSWORD` di `.env`
+- Restart container `web`:
+   ```bash
+   docker compose up -d --no-deps web
+   ```
 
 ---
 
@@ -113,7 +115,7 @@ docker exec -it ads-tracker-web npx prisma db seed
 
 - **Gagal Konek Database**: 
   - Pastikan container database sudah berjalan (`docker compose ps`).
-  - Cek apakah port 5432 sudah digunakan oleh aplikasi lain di host.
+   - Cek apakah port 5433 sudah digunakan oleh aplikasi lain di host.
 - **Prisma Error**: 
   - Jalankan `npx prisma generate` setiap kali ada perubahan pada file `schema.prisma`.
   - Pastikan `DATABASE_URL` sudah benar di file `.env`.
@@ -139,4 +141,121 @@ Agar data selalu update dan mencakup 30 hari terakhir (Smart Sync), pasang cron 
    *Pastikan URL `http://localhost:3000` sesuai dengan port aplikasi Anda di VPS.*
 
 3. **Simpan dan keluar**.
+
+---
+
+## 6. Update / Upgrade Server (Runbook)
+
+Langkah ini untuk server yang **sudah berjalan** dan ingin di-update ke versi terbaru dengan aman.
+
+1. **Cek status**:
+   ```bash
+   docker compose ps
+   ```
+
+2. **(Disarankan) Backup database**:
+   ```bash
+   docker exec ads-tracker-db pg_dump -U postgres -d ads_tracker | gzip > ~/ads_tracker_backup_$(date +%Y%m%d_%H%M%S).sql.gz
+   ```
+
+3. **Update source code**:
+   ```bash
+   git fetch --all
+   git checkout main
+   git pull
+   ```
+
+4. **Build image terbaru** (tanpa restart dulu untuk minim downtime):
+   ```bash
+   docker compose build web
+   ```
+
+5. **Jalankan migrasi Prisma** (fail-fast sebelum restart web):
+   ```bash
+   docker compose run --rm web npx prisma migrate deploy
+   ```
+
+6. **Restart web**:
+   ```bash
+   docker compose up -d --no-deps web
+   docker compose logs -f web
+   ```
+
+7. **Verifikasi**:
+   ```bash
+   curl -I http://localhost:3000/
+   docker compose exec web npx prisma migrate status
+   ```
+
+### Rollback cepat
+
+- **Rollback code**:
+  ```bash
+  git reset --hard <commit-sebelumnya>
+  docker compose up -d --build --no-deps web
+  ```
+
+- **Rollback DB (restore backup)**:
+  ```bash
+  docker compose stop web
+  gunzip -c ~/ads_tracker_backup_*.sql.gz | docker exec -i ads-tracker-db psql -U postgres -d ads_tracker
+  docker compose up -d
+  ```
+
+---
+
+## 7. Restore Database dari SQL Dump (Baseline Prisma)
+
+Jika Anda melakukan restore dari file `.sql` hasil `pg_dump` (full schema + data), database akan menjadi **tidak kosong**.
+Pada kondisi ini, `npx prisma migrate deploy` bisa gagal dengan error `P3005` karena Prisma belum punya baseline `_prisma_migrations`.
+
+Solusinya: restore dulu, lalu **baseline** migrations Prisma (mark as applied).
+
+### A) Restore (fresh volume)
+
+Jika DB masih disposable dan Anda ingin overwrite total:
+
+```bash
+docker compose stop web
+docker compose down -v --remove-orphans
+docker compose up -d postgres
+
+# restore (fail-fast)
+cat backups/your_dump.sql | docker exec -i ads-tracker-db psql -v ON_ERROR_STOP=1 -U postgres -d ads_tracker
+```
+
+### B) Restore (tanpa hapus volume)
+
+```bash
+docker compose stop web
+cat backups/your_dump.sql | docker exec -i ads-tracker-db psql -v ON_ERROR_STOP=1 -U postgres -d ads_tracker
+```
+
+### C) Baseline Prisma migrations
+
+Jika Anda memakai versi repo yang sudah di-squash, cukup mark migration init berikut sebagai applied:
+
+```bash
+docker compose run --rm web npx prisma migrate resolve --applied 20260117000000_init
+```
+
+Lalu start web lagi dan verifikasi:
+
+```bash
+docker compose up -d web
+docker compose exec web npx prisma migrate status
+```
+
+### Catatan penting: dump tercampur log `pg_dump:`
+
+Jika file dump Anda berisi baris seperti `pg_dump: reading ...` di dalam `.sql`, restore bisa error/corrupt.
+
+- Saat membuat dump, hindari menggabungkan stderr ke stdout (jangan pakai `2>&1`), atau jangan pakai `--verbose`.
+- Jika dump terlanjur tercampur, Anda bisa “bersihkan” dengan menghapus baris yang diawali `pg_dump:`:
+
+```bash
+sed -E '/^[[:space:]]*pg_dump:/d' backups/your_dump.sql > backups/your_dump.clean.sql
+```
+
+Lalu restore menggunakan file `*.clean.sql`.
 
