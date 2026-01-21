@@ -15,6 +15,27 @@ export interface CalculatedMetrics {
     roas: number;
 }
 
+const leadActionTypes = [
+    'lead',
+    'onsite_conversion.lead_grouped',
+    'onsite_conversion.messaging_conversation_started_7d',
+    'messaging_conversations'
+];
+
+const conversionActionTypes = [
+    'purchase',
+    'onsite_conversion.purchase',
+    'offsite_conversion.fb_pixel_purchase',
+    'omni_purchase',
+];
+
+const revenueActionTypes = [
+    'purchase',
+    'onsite_conversion.purchase',
+    'offsite_conversion.fb_pixel_purchase',
+    'omni_purchase',
+];
+
 export const MetricCalculator = {
     parseMetrics(i: MetaInsight): CalculatedMetrics {
         const spend = parseFloat(i.spend || '0');
@@ -50,12 +71,6 @@ export const MetricCalculator = {
     },
 
     parseLeads(actions: { action_type: string; value: string }[]) {
-        const leadActionTypes = [
-            'lead',
-            'onsite_conversion.lead_grouped',
-            'onsite_conversion.messaging_conversation_started_7d',
-            'messaging_conversations'
-        ];
         let leads = 0;
         actions.forEach(a => {
             if (leadActionTypes.includes(a.action_type)) {
@@ -66,12 +81,6 @@ export const MetricCalculator = {
     },
 
     parseConversions(actions: { action_type: string; value: string }[]) {
-        const conversionActionTypes = [
-            'purchase',
-            'onsite_conversion.purchase',
-            'offsite_conversion.fb_pixel_purchase',
-            'omni_purchase',
-        ];
         let conversions = 0;
         actions.forEach(a => {
             if (conversionActionTypes.includes(a.action_type)) {
@@ -82,12 +91,6 @@ export const MetricCalculator = {
     },
 
     parseRevenue(actionValues: { action_type: string; value: string }[]) {
-        const revenueActionTypes = [
-            'purchase',
-            'onsite_conversion.purchase',
-            'offsite_conversion.fb_pixel_purchase',
-            'omni_purchase',
-        ];
         let revenue = 0;
         actionValues.forEach(av => {
             if (revenueActionTypes.includes(av.action_type)) {
