@@ -46,3 +46,7 @@ next-env.d.ts
 
 # Track Prisma migrations (SQL) even though we ignore generic .sql files
 !prisma/migrations/**/migration.sql
+
+# local Picoclaw workspace support
+/.github/copilot-instructions.md
+/skills/ads-tracker/
